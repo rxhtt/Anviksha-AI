@@ -123,7 +123,9 @@ export const analyzeXray = async (imageBase64: string, mimeType: string): Promis
 
         if (error instanceof Error) {
             if (error.message.includes('API key') || error.message.includes('API_KEY') || error.message.includes('Authentication Error')) {
-                errorMessage = "Authentication Error: The Gemini API key is missing, invalid, or has not been configured correctly in the environment variables. Please ensure the API key is set correctly.";
+                errorMessage = "Authentication Error: The Gemini API key is missing or invalid. Please re-configure your API key and try again.";
+            } else if (error.message.includes('Requested entity was not found')) {
+                errorMessage = "API Key Not Found: The selected API key is no longer valid. Please re-configure your API key.";
             } else if (error.message.includes('400')) {
                 errorMessage = "Bad Request: The image may be corrupted, in an unsupported format, or the request to the AI service was malformed. Please try a different image.";
             } else if (error.message.includes('500') || error.message.includes('503')) {

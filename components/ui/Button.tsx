@@ -1,18 +1,18 @@
-
 import React from 'react';
 // FIX: Import motion component for correct prop typing.
 import { motion } from 'framer-motion';
 
 // FIX: Extend component props from motion.button to ensure compatibility with motion component props.
-interface ButtonProps extends React.ComponentProps<typeof motion.button> {
+// Correcting prop types for Button component by using a type alias with an intersection.
+type ButtonProps = {
   children?: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'outline';
   icon?: React.ReactNode;
   // FIX: Add size prop to support different button sizes.
   size?: 'md' | 'lg' | 'xl';
-}
+} & React.ComponentProps<typeof motion.button>;
 
-const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', icon, className = '', size = 'md', ...props }) => {
+const Button = ({ children, variant = 'primary', icon, className = '', size = 'md', ...props }: ButtonProps) => {
   // FIX: Removed size-specific classes (padding and font-size) to be handled dynamically.
   const baseClasses = "rounded-full font-semibold flex items-center justify-center gap-2 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 disabled:opacity-50 disabled:cursor-not-allowed";
 

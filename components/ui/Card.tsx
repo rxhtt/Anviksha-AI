@@ -1,15 +1,17 @@
-
 import React from 'react';
 // FIX: Use motion component from framer-motion.
 import { motion } from 'framer-motion';
 
 // FIX: Extend component props from motion.div for compatibility with motion component props like `whileHover`.
-interface CardProps extends React.ComponentProps<typeof motion.div> {
+// Correcting prop types for Card component by using a type alias with an intersection.
+type CardProps = {
   children: React.ReactNode;
-}
+} & React.ComponentProps<typeof motion.div>;
+
 
 // FIX: Refactor to use rest props to pass all motion props to the underlying component.
-const Card: React.FC<CardProps> = ({ children, className = '', ...props }) => {
+// Using direct prop typing instead of React.FC to resolve issues with extended props.
+const Card = ({ children, className = '', ...props }: CardProps) => {
   const cardVariants = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },

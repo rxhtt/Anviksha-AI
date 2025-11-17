@@ -8,6 +8,19 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import { IconAlert, IconCheckCircle, IconLung, IconHeart, IconBone, IconCircleDot, IconFileCheck, IconUpload } from '../Icons';
 
+// FIX: Define a type for the aistudio object to resolve declaration conflicts.
+type AIStudio = {
+    hasSelectedApiKey: () => Promise<boolean>;
+    openSelectKey: () => Promise<void>;
+};
+
+// Extend window interface for aistudio
+declare global {
+    interface Window {
+        aistudio?: AIStudio;
+    }
+}
+
 const severityConfig: Record<AnalysisSeverity, { color: string, icon: React.ElementType }> = {
     'Low': { color: 'text-green-600', icon: IconCheckCircle },
     'Medium': { color: 'text-yellow-600', icon: IconAlert },
@@ -96,12 +109,34 @@ const AnalysisLoader: React.FC = () => {
 
 
 const ProductDemo: React.FC = () => {
+    const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
     const [analysisError, setAnalysisError] = useState<string | null>(null);
     const [hoveredFinding, setHoveredFinding] = useState<AnalysisFinding | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        const checkApiKey = async () => {
+            if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+                const hasKey = await window.aistudio.hasSelectedApiKey();
+                setApiKeyConfigured(hasKey);
+            }
+        };
+        checkApiKey();
+    }, []);
+
+    const handleConfigureKey = async () => {
+        if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+            await window.aistudio.openSelectKey();
+            // Optimistically set to true as per guidelines, user can now proceed.
+            setApiKeyConfigured(true);
+            toast.success('API Key configured. You can now run the analysis.');
+        } else {
+            toast.error('API key configuration is not available in this environment.');
+        }
+    };
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         if (acceptedFiles && acceptedFiles.length > 0) {
@@ -159,8 +194,15 @@ const ProductDemo: React.FC = () => {
         } catch (error) {
             console.error("Analysis failed:", error);
             const message = error instanceof Error ? error.message : 'An unknown error occurred.';
+
+            if (message.includes('API Key Not Found') || message.includes('Authentication Error')) {
+                setApiKeyConfigured(false);
+                toast.error('API Key error. Please re-configure your key.');
+            } else {
+                toast.error('Analysis Failed');
+            }
             setAnalysisError(message);
-            toast.error('Analysis Failed');
+
         } finally {
             setIsAnalyzing(false);
         }
@@ -209,131 +251,147 @@ const ProductDemo: React.FC = () => {
                     </div>
 
                     <div className="p-4 sm:p-8">
-                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                            {/* Image Uploader Column */}
-                            <div className="lg:col-span-3 flex flex-col items-center">
-                                <h3 className="text-xl font-semibold text-slate-800">1. Upload X-Ray Image</h3>
-                                <Card className="mt-4 w-full aspect-square overflow-hidden relative bg-slate-100 flex items-center justify-center border-slate-200" onMouseLeave={() => setHoveredFinding(null)}>
-                                    {!imageUrl && (
-                                        <div {...getRootProps()} className="w-full h-full cursor-pointer flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-slate-300 rounded-lg hover:bg-slate-200/50 hover:border-blue-500 transition-colors duration-300">
-                                            <input {...getInputProps()} />
-                                            <IconUpload className="w-12 h-12 text-slate-400 mb-4" />
-                                            {isDragActive ? (
-                                                <p className="text-blue-600">Drop the image here...</p>
-                                            ) : (
-                                                <p className="text-slate-500">Drag & drop an X-ray image here, or click to select a file.</p>
-                                            )}
-                                            <p className="text-xs text-slate-400 mt-2">Supports PNG, JPG</p>
-                                        </div>
-                                    )}
-                                    <AnimatePresence>
-                                        {imageUrl && (
-                                            <motion.img 
-                                                key={imageUrl}
-                                                src={imageUrl} 
-                                                alt="Uploaded Chest X-ray" 
-                                                className="w-full h-full object-contain absolute top-0 left-0" 
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                transition={{ duration: 0.3 }}
-                                            />
-                                        )}
-                                    </AnimatePresence>
-                                     {hoveredFinding?.boundingBox && (
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 1.2 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            transition={{type: 'spring', stiffness: 300, damping: 20}}
-                                            className="absolute border-2 border-blue-500 pointer-events-none rounded-md shadow-[0_0_15px_rgba(59,130,246,0.7)]"
-                                            style={{
-                                                left: `${hoveredFinding.boundingBox[0] * 100}%`,
-                                                top: `${hoveredFinding.boundingBox[1] * 100}%`,
-                                                width: `${(hoveredFinding.boundingBox[2] - hoveredFinding.boundingBox[0]) * 100}%`,
-                                                height: `${(hoveredFinding.boundingBox[3] - hoveredFinding.boundingBox[1]) * 100}%`,
-                                            }}
-                                        />
-                                    )}
-                                </Card>
-                                <Button onClick={handleStartAnalysis} disabled={!imageFile || isAnalyzing} className="mt-6 w-full max-w-sm" size="lg">
-                                    {isAnalyzing ? 'Analyzing...' : '2. Run AI Analysis'}
+                        {!apiKeyConfigured ? (
+                             <div className="flex flex-col items-center justify-center p-8 lg:col-span-5 min-h-[480px] text-center">
+                                <IconAlert className="w-12 h-12 text-yellow-500" />
+                                <h3 className="mt-4 text-xl font-bold text-slate-800">API Key Required</h3>
+                                <p className="mt-2 text-slate-600 max-w-md">
+                                    To use this interactive demo, you need to configure your Gemini API key. This allows the application to communicate with the AI model.
+                                </p>
+                                <p className="mt-2 text-sm text-slate-500 max-w-md">
+                                  Please note that charges may apply for API usage. For more details, see the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium">billing documentation</a>.
+                                </p>
+                                <Button onClick={handleConfigureKey} className="mt-6" size="lg">
+                                    Configure API Key
                                 </Button>
                             </div>
-                             {/* Analysis Report Column */}
-                            <div className="lg:col-span-2 flex flex-col">
-                                 <h3 className="text-xl font-semibold text-slate-800 text-center">3. AI Analysis Report</h3>
-                                <Card className="mt-4 flex-grow flex flex-col min-h-[480px] bg-slate-50 border border-slate-200">
-                                    <AnimatePresence mode="wait">
-                                        {isAnalyzing ? (
-                                            <AnalysisLoader key="loader" />
-                                        ) : analysisError ? (
-                                            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-grow flex flex-col items-center justify-center text-center p-6">
-                                                <IconAlert className="w-12 h-12 text-red-500" />
-                                                <h4 className="mt-4 font-bold text-red-700">Analysis Failed</h4>
-                                                <p className="mt-2 text-sm text-slate-600 max-w-sm">{analysisError}</p>
-                                            </motion.div>
-                                        ) : analysisResult ? (
-                                            <motion.div key="results" variants={containerVariants} initial="hidden" animate="visible" className="p-4 overflow-y-auto space-y-4">
-                                                <motion.div variants={itemVariants}>
-                                                    <h4 className="font-bold text-slate-800">Overall Assessment</h4>
-                                                    <p className="mt-1 text-sm text-slate-600">{analysisResult.overallAssessment}</p>
-                                                </motion.div>
-
-                                                {analysisResult.isTuberculosisDetected && (
-                                                    <motion.div variants={itemVariants} className="p-3 rounded-lg bg-red-50 border border-red-200">
-                                                        <div className="flex items-center">
-                                                            <IconAlert className="h-5 w-5 text-red-600 mr-2" />
-                                                            <h4 className="font-bold text-red-800">Potential Tuberculosis Detected</h4>
-                                                        </div>
-                                                        <p className="mt-1 text-sm text-red-700">{analysisResult.tuberculosisReport}</p>
-                                                    </motion.div>
+                        ) : (
+                            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                                {/* Image Uploader Column */}
+                                <div className="lg:col-span-3 flex flex-col items-center">
+                                    <h3 className="text-xl font-semibold text-slate-800">1. Upload X-Ray Image</h3>
+                                    <Card className="mt-4 w-full aspect-square overflow-hidden relative bg-slate-100 flex items-center justify-center border-slate-200" onMouseLeave={() => setHoveredFinding(null)}>
+                                        {!imageUrl && (
+                                            <div {...getRootProps()} className="w-full h-full cursor-pointer flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-slate-300 rounded-lg hover:bg-slate-200/50 hover:border-blue-500 transition-colors duration-300">
+                                                <input {...getInputProps()} />
+                                                <IconUpload className="w-12 h-12 text-slate-400 mb-4" />
+                                                {isDragActive ? (
+                                                    <p className="text-blue-600">Drop the image here...</p>
+                                                ) : (
+                                                    <p className="text-slate-500">Drag & drop an X-ray image here, or click to select a file.</p>
                                                 )}
-
-                                                <motion.div variants={itemVariants}>
-                                                    <h4 className="font-bold text-slate-800">Key Findings</h4>
-                                                    {analysisResult.findings.length > 0 ? (
-                                                        <ul className="mt-2 space-y-3">
-                                                            {analysisResult.findings.map((finding, index) => {
-                                                                const SeverityIcon = severityConfig[finding.severity].icon;
-                                                                const severityColor = severityConfig[finding.severity].color;
-                                                                const CategoryIcon = categoryConfig[finding.category].icon;
-                                                                return (
-                                                                    <motion.li 
-                                                                        key={index} 
-                                                                        variants={itemVariants} 
-                                                                        className="p-3 rounded-md border border-slate-200 bg-white hover:bg-slate-100/70 cursor-pointer"
-                                                                        onMouseEnter={() => setHoveredFinding(finding)}
-                                                                    >
-                                                                        <div className="flex items-center justify-between">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <CategoryIcon className="h-5 w-5 text-slate-500" />
-                                                                                <span className="font-semibold text-sm text-slate-700">{finding.condition}</span>
-                                                                            </div>
-                                                                            <div className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${severityColor} bg-opacity-10`}>
-                                                                                <SeverityIcon className="h-3 w-3" />
-                                                                                <span>{finding.severity}</span>
-                                                                            </div>
-                                                                        </div>
-                                                                        <p className="text-xs text-slate-500 mt-1 pl-7">{finding.description}</p>
-                                                                    </motion.li>
-                                                                );
-                                                            })}
-                                                        </ul>
-                                                    ) : (
-                                                        <p className="text-sm text-slate-500 mt-2">No significant abnormalities were detected in the analysis.</p>
-                                                    )}
-                                                </motion.div>
-                                            </motion.div>
-                                        ) : (
-                                            <motion.div key="initial" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-grow flex flex-col items-center justify-center text-center p-4">
-                                                <IconFileCheck className="w-12 h-12 text-slate-400" />
-                                                <p className="mt-4 text-slate-500">Your analysis report will appear here after uploading an image and running the AI.</p>
-                                            </motion.div>
+                                                <p className="text-xs text-slate-400 mt-2">Supports PNG, JPG</p>
+                                            </div>
                                         )}
-                                    </AnimatePresence>
-                                </Card>
+                                        <AnimatePresence>
+                                            {imageUrl && (
+                                                <motion.img 
+                                                    key={imageUrl}
+                                                    src={imageUrl} 
+                                                    alt="Uploaded Chest X-ray" 
+                                                    className="w-full h-full object-contain absolute top-0 left-0" 
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    transition={{ duration: 0.3 }}
+                                                />
+                                            )}
+                                        </AnimatePresence>
+                                        {hoveredFinding?.boundingBox && (
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 1.2 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{type: 'spring', stiffness: 300, damping: 20}}
+                                                className="absolute border-2 border-blue-500 pointer-events-none rounded-md shadow-[0_0_15px_rgba(59,130,246,0.7)]"
+                                                style={{
+                                                    left: `${hoveredFinding.boundingBox[0] * 100}%`,
+                                                    top: `${hoveredFinding.boundingBox[1] * 100}%`,
+                                                    width: `${(hoveredFinding.boundingBox[2] - hoveredFinding.boundingBox[0]) * 100}%`,
+                                                    height: `${(hoveredFinding.boundingBox[3] - hoveredFinding.boundingBox[1]) * 100}%`,
+                                                }}
+                                            />
+                                        )}
+                                    </Card>
+                                    <Button onClick={handleStartAnalysis} disabled={!imageFile || isAnalyzing} className="mt-6 w-full max-w-sm" size="lg">
+                                        {isAnalyzing ? 'Analyzing...' : '2. Run AI Analysis'}
+                                    </Button>
+                                </div>
+                                {/* Analysis Report Column */}
+                                <div className="lg:col-span-2 flex flex-col">
+                                    <h3 className="text-xl font-semibold text-slate-800 text-center">3. AI Analysis Report</h3>
+                                    <Card className="mt-4 flex-grow flex flex-col min-h-[480px] bg-slate-50 border border-slate-200">
+                                        <AnimatePresence mode="wait">
+                                            {isAnalyzing ? (
+                                                <AnalysisLoader key="loader" />
+                                            ) : analysisError ? (
+                                                <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-grow flex flex-col items-center justify-center text-center p-6">
+                                                    <IconAlert className="w-12 h-12 text-red-500" />
+                                                    <h4 className="mt-4 font-bold text-red-700">Analysis Failed</h4>
+                                                    <p className="mt-2 text-sm text-slate-600 max-w-sm">{analysisError}</p>
+                                                </motion.div>
+                                            ) : analysisResult ? (
+                                                <motion.div key="results" variants={containerVariants} initial="hidden" animate="visible" className="p-4 overflow-y-auto space-y-4">
+                                                    <motion.div variants={itemVariants}>
+                                                        <h4 className="font-bold text-slate-800">Overall Assessment</h4>
+                                                        <p className="mt-1 text-sm text-slate-600">{analysisResult.overallAssessment}</p>
+                                                    </motion.div>
+
+                                                    {analysisResult.isTuberculosisDetected && (
+                                                        <motion.div variants={itemVariants} className="p-3 rounded-lg bg-red-50 border border-red-200">
+                                                            <div className="flex items-center">
+                                                                <IconAlert className="h-5 w-5 text-red-600 mr-2" />
+                                                                <h4 className="font-bold text-red-800">Potential Tuberculosis Detected</h4>
+                                                            </div>
+                                                            <p className="mt-1 text-sm text-red-700">{analysisResult.tuberculosisReport}</p>
+                                                        </motion.div>
+                                                    )}
+
+                                                    <motion.div variants={itemVariants}>
+                                                        <h4 className="font-bold text-slate-800">Key Findings</h4>
+                                                        {analysisResult.findings.length > 0 ? (
+                                                            <ul className="mt-2 space-y-3">
+                                                                {analysisResult.findings.map((finding, index) => {
+                                                                    const SeverityIcon = severityConfig[finding.severity].icon;
+                                                                    const severityColor = severityConfig[finding.severity].color;
+                                                                    const CategoryIcon = categoryConfig[finding.category].icon;
+                                                                    return (
+                                                                        <motion.li 
+                                                                            key={index} 
+                                                                            variants={itemVariants} 
+                                                                            className="p-3 rounded-md border border-slate-200 bg-white hover:bg-slate-100/70 cursor-pointer"
+                                                                            onMouseEnter={() => setHoveredFinding(finding)}
+                                                                        >
+                                                                            <div className="flex items-center justify-between">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <CategoryIcon className="h-5 w-5 text-slate-500" />
+                                                                                    <span className="font-semibold text-sm text-slate-700">{finding.condition}</span>
+                                                                                </div>
+                                                                                <div className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${severityColor} bg-opacity-10`}>
+                                                                                    <SeverityIcon className="h-3 w-3" />
+                                                                                    <span>{finding.severity}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                            <p className="text-xs text-slate-500 mt-1 pl-7">{finding.description}</p>
+                                                                        </motion.li>
+                                                                    );
+                                                                })}
+                                                            </ul>
+                                                        ) : (
+                                                            <p className="text-sm text-slate-500 mt-2">No significant abnormalities were detected in the analysis.</p>
+                                                        )}
+                                                    </motion.div>
+                                                </motion.div>
+                                            ) : (
+                                                <motion.div key="initial" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-grow flex flex-col items-center justify-center text-center p-4">
+                                                    <IconFileCheck className="w-12 h-12 text-slate-400" />
+                                                    <p className="mt-4 text-slate-500">Your analysis report will appear here after uploading an image and running the AI.</p>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </Card>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </motion.div>
             </div>
