@@ -31,36 +31,26 @@ const loadingTexts = [
 ];
 
 const mockAbnormalResult: AnalysisResult = {
-  overallAssessment: "The chest X-ray shows signs of right upper lobe consolidation and a potential cavitary lesion, highly suggestive of active pulmonary tuberculosis. Additionally, mild cardiomegaly is noted. No acute skeletal abnormalities are observed.",
-  isTuberculosisDetected: true,
-  tuberculosisReport: "Evidence of active tuberculosis is observed, characterized by consolidation in the right upper lobe. A cavitary lesion appears to be present, which is a classic sign of post-primary TB. Further microbiological tests are strongly recommended for confirmation.",
+  overallAssessment: "The chest X-ray demonstrates significant cardiomegaly, with a cardiothoracic ratio exceeding 50%. There are prominent signs of pulmonary venous congestion and interstitial edema, particularly in the lower lung zones. No focal consolidation or pneumothorax is identified. Skeletal structures appear intact.",
+  isTuberculosisDetected: false,
   findings: [
-    {
-      condition: "Pulmonary Consolidation",
-      category: "Pulmonary",
-      severity: "High",
-      confidence: 0.92,
-      description: "Opacity in the right upper lobe consistent with consolidation.",
-      recommendation: "Sputum smear microscopy and culture for AFB are recommended.",
-      boundingBox: [0.55, 0.1, 0.85, 0.4]
-    },
-    {
-      condition: "Cavitary Lesion",
-      category: "Pulmonary",
-      severity: "Critical",
-      confidence: 0.85,
-      description: "A lucent area within the consolidation in the right upper lobe suggests a cavity.",
-      recommendation: "Immediate clinical evaluation and initiation of anti-tuberculosis therapy is advised.",
-      boundingBox: [0.65, 0.18, 0.8, 0.3]
-    },
     {
       condition: "Cardiomegaly",
       category: "Cardiac",
-      severity: "Low",
-      confidence: 0.78,
-      description: "The cardiothoracic ratio is slightly elevated, suggesting mild enlargement of the heart.",
-      recommendation: "Monitor blood pressure and consider an ECG for further cardiac evaluation.",
-      boundingBox: [0.25, 0.45, 0.75, 0.85]
+      severity: "High",
+      confidence: 0.96,
+      description: "The cardiac silhouette is markedly enlarged, with a cardiothoracic ratio greater than 0.5, indicative of cardiomegaly.",
+      recommendation: "Clinical correlation for symptoms of heart failure is advised. An echocardiogram is recommended for further evaluation of cardiac function.",
+      boundingBox: [0.25, 0.4, 0.75, 0.9]
+    },
+    {
+      condition: "Pulmonary Edema",
+      category: "Pulmonary",
+      severity: "High",
+      confidence: 0.91,
+      description: "Diffuse interstitial opacities and increased vascular markings are present, consistent with pulmonary edema, likely secondary to cardiac dysfunction.",
+      recommendation: "Immediate clinical assessment for respiratory distress and consideration for diuretic therapy is recommended.",
+      boundingBox: [0.15, 0.45, 0.85, 0.9]
     }
   ]
 };
@@ -81,8 +71,8 @@ const samples = {
     },
     abnormal: {
         id: 'abnormal',
-        title: 'Abnormal Chest X-ray',
-        description: 'Shows signs of active pulmonary tuberculosis.',
+        title: 'Cardiomegaly & Edema Case',
+        description: 'Shows an enlarged heart and signs of fluid in the lungs.',
         imageUrl: '/images/xray-abnormal.jpg',
         analysisResult: mockAbnormalResult,
     }
@@ -278,7 +268,7 @@ const ProductDemo: React.FC = () => {
                                             initial={{ opacity: 0, scale: 1.2 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             transition={{type: 'spring', stiffness: 300, damping: 20}}
-                                            className="absolute border-2 border-blue-500 pointer-events-none rounded-md shadow-[0_0_15px_rgba(59,130,246,0.7)]"
+                                            className="absolute border-2 border-blue-500 pointer-events-none rounded-lg bg-blue-500/20"
                                             style={{
                                                 left: `${hoveredFinding.boundingBox[0] * 100}%`,
                                                 top: `${hoveredFinding.boundingBox[1] * 100}%`,
@@ -288,76 +278,75 @@ const ProductDemo: React.FC = () => {
                                         />
                                     )}
                                 </Card>
-                                <Button onClick={handleStartAnalysis} disabled={!selectedSample || isAnalyzing} className="mt-6 w-full max-w-sm mx-auto" size="lg">
-                                    {isAnalyzing ? 'Analyzing...' : '2. Run AI Analysis'}
-                                </Button>
+
+                                <div className="mt-6 text-center">
+                                    <Button
+                                        size="lg"
+                                        variant="primary"
+                                        onClick={handleStartAnalysis}
+                                        disabled={isAnalyzing || !selectedSample}
+                                        icon={<IconArrowRight />}
+                                    >
+                                        {isAnalyzing ? 'Analyzing...' : 'Run AI Analysis'}
+                                    </Button>
+                                </div>
                             </div>
-                            {/* Analysis Report Column */}
+                            
+                            {/* Analysis Results Column */}
                             <div className="lg:col-span-2 flex flex-col">
-                                <h3 className="text-xl font-semibold text-slate-800 text-center">3. AI Analysis Report</h3>
-                                <Card className="mt-4 flex-grow flex flex-col min-h-[480px] bg-slate-50 border border-slate-200">
+                                <h3 className="text-xl font-semibold text-slate-800 text-center">2. Review AI-Generated Report</h3>
+                                <Card className="mt-4 w-full flex-grow p-6 bg-slate-100/70">
                                     <AnimatePresence mode="wait">
                                         {isAnalyzing ? (
-                                            <AnalysisLoader key="loader" />
+                                            <AnalysisLoader />
                                         ) : analysisResult ? (
-                                            <motion.div key="results" variants={containerVariants} initial="hidden" animate="visible" className="p-4 overflow-y-auto space-y-4">
+                                            <motion.div 
+                                                key="results" 
+                                                variants={containerVariants} 
+                                                initial="hidden" 
+                                                animate="visible"
+                                            >
                                                 <motion.div variants={itemVariants}>
-                                                    <h4 className="font-bold text-slate-800">Overall Assessment</h4>
-                                                    <p className="mt-1 text-sm text-slate-600">{analysisResult.overallAssessment}</p>
+                                                    <h4 className="font-semibold text-slate-800">Overall Assessment</h4>
+                                                    <p className="mt-2 text-sm text-slate-600">{analysisResult.overallAssessment}</p>
                                                 </motion.div>
 
-                                                {analysisResult.isTuberculosisDetected && (
-                                                    <motion.div variants={itemVariants} className="p-3 rounded-lg bg-red-50 border border-red-200">
-                                                        <div className="flex items-center">
-                                                            <IconAlert className="h-5 w-5 text-red-600 mr-2" />
-                                                            <h4 className="font-bold text-red-800">Potential Tuberculosis Detected</h4>
-                                                        </div>
-                                                        <p className="mt-1 text-sm text-red-700">{analysisResult.tuberculosisReport}</p>
-                                                    </motion.div>
-                                                )}
-
-                                                <motion.div variants={itemVariants}>
-                                                    <h4 className="font-bold text-slate-800">Key Findings</h4>
-                                                    {analysisResult.findings.length > 0 ? (
-                                                        <ul className="mt-2 space-y-3">
+                                                {analysisResult.findings.length > 0 ? (
+                                                     <motion.div variants={itemVariants} className="mt-6">
+                                                        <h4 className="font-semibold text-slate-800">Key Findings</h4>
+                                                        <div className="mt-2 space-y-3">
                                                             {analysisResult.findings.map((finding, index) => {
                                                                 const SeverityIcon = severityConfig[finding.severity].icon;
                                                                 const severityColor = severityConfig[finding.severity].color;
                                                                 const CategoryIcon = categoryConfig[finding.category].icon;
                                                                 return (
-                                                                    <motion.li 
-                                                                        key={index} 
-                                                                        variants={itemVariants} 
-                                                                        className="p-3 rounded-md border border-slate-200 bg-white hover:bg-slate-100/70 cursor-pointer"
-                                                                        onMouseEnter={() => setHoveredFinding(finding)}
-                                                                    >
+                                                                    <div key={index} onMouseEnter={() => setHoveredFinding(finding)} onMouseLeave={() => setHoveredFinding(null)} className="p-3 bg-white rounded-lg border border-slate-200 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
                                                                         <div className="flex items-center justify-between">
                                                                             <div className="flex items-center gap-2">
-                                                                                <CategoryIcon className="h-5 w-5 text-slate-500" />
-                                                                                <span className="font-semibold text-sm text-slate-700">{finding.condition}</span>
+                                                                                <CategoryIcon className="w-5 h-5 text-slate-500" />
+                                                                                <span className="font-semibold text-slate-700">{finding.condition}</span>
                                                                             </div>
-                                                                            <div className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${severityColor} bg-opacity-10`}>
-                                                                                <SeverityIcon className="h-3 w-3" />
-                                                                                <span>{finding.severity}</span>
-                                                                            </div>
+                                                                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${severityColor} bg-opacity-10 ${severityColor.replace('text-', 'bg-')}`}>{finding.severity}</span>
                                                                         </div>
-                                                                        <p className="text-xs text-slate-500 mt-1 pl-7">{finding.description}</p>
-                                                                    </motion.li>
-                                                                );
+                                                                        <p className="text-sm text-slate-500 mt-1.5">{finding.description}</p>
+                                                                    </div>
+                                                                )
                                                             })}
-                                                        </ul>
-                                                    ) : (
-                                                        <motion.div variants={itemVariants} className="text-center p-4 rounded-lg bg-green-50 border border-green-200 mt-2">
-                                                            <IconCheckCircle className="w-8 h-8 text-green-600 mx-auto"/>
-                                                             <p className="text-sm text-green-800 mt-2 font-semibold">No significant abnormalities were detected in the analysis.</p>
-                                                        </motion.div>
-                                                    )}
-                                                </motion.div>
+                                                        </div>
+                                                    </motion.div>
+                                                ) : (
+                                                    <motion.div variants={itemVariants} className="mt-6 text-center py-8">
+                                                        <IconCheckCircle className="w-12 h-12 text-green-500 mx-auto" />
+                                                        <h4 className="mt-4 font-semibold text-slate-800">No Significant Findings</h4>
+                                                        <p className="mt-1 text-slate-500">The AI analysis did not detect any notable abnormalities.</p>
+                                                    </motion.div>
+                                                )}
+
                                             </motion.div>
                                         ) : (
-                                            <motion.div key="initial" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-grow flex flex-col items-center justify-center text-center p-4">
-                                                <IconFileCheck className="w-12 h-12 text-slate-400" />
-                                                <p className="mt-4 text-slate-500">Your analysis report will appear here after selecting a sample and running the AI.</p>
+                                            <motion.div key="placeholder" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center flex flex-col items-center justify-center h-full">
+                                                <IconFileCheck className="w-12 h-12 text-slate-400 mb-4" />
+                                                <p className="text-slate-500">AI-generated findings will appear here after analysis.</p>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
