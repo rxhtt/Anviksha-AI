@@ -2,8 +2,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { GeminiAnalysisResponse } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 const responseSchema = {
     type: Type.OBJECT,
     properties: {
@@ -56,6 +54,8 @@ The report must include:
 
 
 export const analyzeXray = async (imageBase64: string, mimeType: string): Promise<GeminiAnalysisResponse> => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
     try {
         const imagePart = {
             inlineData: {
