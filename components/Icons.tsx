@@ -28,6 +28,7 @@ import {
   Bot,
   User,
   BookOpen,
+  KeyRound,
 } from 'lucide-react';
 
 export const IconDashboard = LayoutDashboard;
@@ -58,3 +59,4 @@ export const IconArrowRight = ArrowRight;
 export const IconBot = Bot;
 export const IconUser = User;
 export const IconBook = BookOpen;
+export const IconKey = KeyRound;

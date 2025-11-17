@@ -79,7 +79,11 @@ Your JSON report must include:
     - If there are no significant abnormalities, return an empty 'findings' array.`;
 
 
-export const analyzeXray = async (imageBase64: string, mimeType: string): Promise<GeminiAnalysisResponse> => {
+export const analyzeXray = async (imageBase64: string, mimeType: string, apiKey: string): Promise<GeminiAnalysisResponse> => {
+    if (!apiKey) {
+        throw new Error("Authentication Error: The Gemini API key is missing. Please provide your API key to proceed.");
+    }
+    
     const model = 'gemini-2.5-flash';
 
     const imagePart = {
@@ -94,7 +98,7 @@ export const analyzeXray = async (imageBase64: string, mimeType: string): Promis
     };
 
     try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const ai = new GoogleGenAI({ apiKey: apiKey });
         
         console.log(`Attempting analysis with model: ${model}`);
         const response = await ai.models.generateContent({
@@ -122,15 +126,19 @@ export const analyzeXray = async (imageBase64: string, mimeType: string): Promis
         let errorMessage = "An unknown error occurred during analysis. Please check the console for details.";
 
         if (error instanceof Error) {
-            if (error.message.includes('API key') || error.message.includes('API_KEY') || error.message.includes('Authentication Error')) {
-                errorMessage = "Authentication Error: The Gemini API key is missing or invalid. Please re-configure your API key and try again.";
-            } else if (error.message.includes('Requested entity was not found')) {
-                errorMessage = "API Key Not Found: The selected API key is no longer valid. Please re-configure your API key.";
+            const lowerCaseMessage = error.message.toLowerCase();
+            
+            if (lowerCaseMessage.includes('api key not valid') || lowerCaseMessage.includes('invalid api key')) {
+                 errorMessage = "Authentication Error: The provided Gemini API key appears to be invalid. Please double-check that the key is correct and has not expired, then try again.";
+            } else if (lowerCaseMessage.includes('permission denied')) {
+                 errorMessage = "Permission Error: Your API key is valid, but it lacks the necessary permissions. Please check your Google AI Studio or Cloud project settings to ensure the Gemini API is enabled for your key.";
+            } else if (lowerCaseMessage.includes('api key') || lowerCaseMessage.includes('api_key') || lowerCaseMessage.includes('authentication')) {
+                errorMessage = "Authentication Error: The Gemini API key is invalid or missing permissions. Please check your key and try again.";
             } else if (error.message.includes('400')) {
                 errorMessage = "Bad Request: The image may be corrupted, in an unsupported format, or the request to the AI service was malformed. Please try a different image.";
             } else if (error.message.includes('500') || error.message.includes('503')) {
                 errorMessage = "Server Error: The AI service is temporarily unavailable. Please try again in a few moments.";
-            } else if (error.message.includes('safety') || error.message.includes('blocked')) {
+            } else if (lowerCaseMessage.includes('safety') || lowerCaseMessage.includes('blocked')) {
                 errorMessage = "Content Blocked: The image was blocked due to the platform's safety policy. This can occasionally happen with medical imaging. Please try a different image if possible."
             } else {
                 errorMessage = error.message;

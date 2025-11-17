@@ -6,20 +6,8 @@ import { analyzeXray } from '../../services/geminiService';
 import { AnalysisResult, AnalysisFinding, AnalysisSeverity } from '../../types';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import { IconAlert, IconCheckCircle, IconLung, IconHeart, IconBone, IconCircleDot, IconFileCheck, IconUpload } from '../Icons';
+import { IconAlert, IconCheckCircle, IconLung, IconHeart, IconBone, IconCircleDot, IconFileCheck, IconUpload, IconKey } from '../Icons';
 
-// FIX: Define a type for the aistudio object to resolve declaration conflicts.
-type AIStudio = {
-    hasSelectedApiKey: () => Promise<boolean>;
-    openSelectKey: () => Promise<void>;
-};
-
-// Extend window interface for aistudio
-declare global {
-    interface Window {
-        aistudio?: AIStudio;
-    }
-}
 
 const severityConfig: Record<AnalysisSeverity, { color: string, icon: React.ElementType }> = {
     'Low': { color: 'text-green-600', icon: IconCheckCircle },
@@ -109,7 +97,8 @@ const AnalysisLoader: React.FC = () => {
 
 
 const ProductDemo: React.FC = () => {
-    const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
+    const [apiKey, setApiKey] = useState<string | null>(null);
+    const [tempApiKey, setTempApiKey] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
     const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -118,25 +107,29 @@ const ProductDemo: React.FC = () => {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
 
     useEffect(() => {
-        const checkApiKey = async () => {
-            if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
-                const hasKey = await window.aistudio.hasSelectedApiKey();
-                setApiKeyConfigured(hasKey);
-            }
-        };
-        checkApiKey();
+        const storedKey = sessionStorage.getItem('gemini-api-key');
+        if (storedKey) {
+            setApiKey(storedKey);
+        }
     }, []);
 
-    const handleConfigureKey = async () => {
-        if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
-            await window.aistudio.openSelectKey();
-            // Optimistically set to true as per guidelines, user can now proceed.
-            setApiKeyConfigured(true);
-            toast.success('API Key configured. You can now run the analysis.');
+    const handleSaveKey = () => {
+        if (tempApiKey.trim()) {
+            setApiKey(tempApiKey);
+            sessionStorage.setItem('gemini-api-key', tempApiKey);
+            toast.success('API Key saved for this session.');
+            setTempApiKey('');
         } else {
-            toast.error('API key configuration is not available in this environment.');
+            toast.error('Please enter a valid API key.');
         }
     };
+    
+    const handleClearKey = () => {
+        setApiKey(null);
+        sessionStorage.removeItem('gemini-api-key');
+        toast.success('API Key cleared.');
+    };
+
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         if (acceptedFiles && acceptedFiles.length > 0) {
@@ -184,20 +177,24 @@ const ProductDemo: React.FC = () => {
             toast.error('Please upload an X-ray image first.');
             return;
         }
+        if (!apiKey) {
+            toast.error('Please set your Gemini API key before running the analysis.');
+            return;
+        }
         setIsAnalyzing(true);
         setAnalysisResult(null);
         setAnalysisError(null);
         try {
             const { base64, mimeType } = await fileToBase64(imageFile);
-            const result = await analyzeXray(base64, mimeType);
+            const result = await analyzeXray(base64, mimeType, apiKey);
             setAnalysisResult(result);
         } catch (error) {
             console.error("Analysis failed:", error);
             const message = error instanceof Error ? error.message : 'An unknown error occurred.';
 
-            if (message.includes('API Key Not Found') || message.includes('Authentication Error')) {
-                setApiKeyConfigured(false);
-                toast.error('API Key error. Please re-configure your key.');
+            if (message.includes('Authentication Error') || message.includes('Permission Error')) {
+                handleClearKey();
+                toast.error('API Key authentication failed.');
             } else {
                 toast.error('Analysis Failed');
             }
@@ -251,19 +248,28 @@ const ProductDemo: React.FC = () => {
                     </div>
 
                     <div className="p-4 sm:p-8">
-                        {!apiKeyConfigured ? (
+                        {!apiKey ? (
                              <div className="flex flex-col items-center justify-center p-8 lg:col-span-5 min-h-[480px] text-center">
-                                <IconAlert className="w-12 h-12 text-yellow-500" />
-                                <h3 className="mt-4 text-xl font-bold text-slate-800">API Key Required</h3>
+                                <IconKey className="w-12 h-12 text-blue-500" />
+                                <h3 className="mt-4 text-xl font-bold text-slate-800">Gemini API Key Required</h3>
                                 <p className="mt-2 text-slate-600 max-w-md">
-                                    To use this interactive demo, you need to configure your Gemini API key. This allows the application to communicate with the AI model.
+                                    To use this interactive demo, please enter your Gemini API key below. Your key is stored only in your browser for this session.
                                 </p>
-                                <p className="mt-2 text-sm text-slate-500 max-w-md">
-                                  Please note that charges may apply for API usage. For more details, see the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium">billing documentation</a>.
+                                <div className="mt-6 w-full max-w-sm">
+                                    <input 
+                                        type="password"
+                                        value={tempApiKey}
+                                        onChange={(e) => setTempApiKey(e.target.value)}
+                                        placeholder="Enter your Gemini API Key"
+                                        className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                    />
+                                    <Button onClick={handleSaveKey} className="mt-3 w-full" size="lg">
+                                        Save API Key
+                                    </Button>
+                                </div>
+                                <p className="mt-4 text-sm text-slate-500 max-w-md">
+                                  You can get your key from Google AI Studio. Charges may apply for API usage. For details, see the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium">billing documentation</a>.
                                 </p>
-                                <Button onClick={handleConfigureKey} className="mt-6" size="lg">
-                                    Configure API Key
-                                </Button>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -318,7 +324,10 @@ const ProductDemo: React.FC = () => {
                                 </div>
                                 {/* Analysis Report Column */}
                                 <div className="lg:col-span-2 flex flex-col">
-                                    <h3 className="text-xl font-semibold text-slate-800 text-center">3. AI Analysis Report</h3>
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-xl font-semibold text-slate-800 text-center">3. AI Analysis Report</h3>
+                                        <Button onClick={handleClearKey} variant="outline" size="md" className="py-1 px-3 text-xs">Change Key</Button>
+                                    </div>
                                     <Card className="mt-4 flex-grow flex flex-col min-h-[480px] bg-slate-50 border border-slate-200">
                                         <AnimatePresence mode="wait">
                                             {isAnalyzing ? (
