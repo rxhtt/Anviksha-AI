@@ -83,7 +83,7 @@ export const analyzeXray = async (imageBase64: string, mimeType: string): Promis
             console.log(`Attempting analysis with model: ${model}`);
             const response = await ai.models.generateContent({
                 model: model,
-                contents: { parts: [imagePart, textPart] },
+                contents: [{ parts: [imagePart, textPart] }],
                 config: {
                     responseMimeType: "application/json",
                     responseSchema: responseSchema,
