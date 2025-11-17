@@ -62,15 +62,6 @@ Your JSON report must include:
 
 
 export const analyzeXray = async (imageBase64: string, mimeType: string): Promise<GeminiAnalysisResponse> => {
-    if (!process.env.API_KEY) {
-        console.error("API_KEY environment variable is not set.");
-        return {
-            overallAssessment: "Configuration Error: The API key is missing. Please ensure the API_KEY is configured correctly in the application's environment settings.",
-            isTuberculosisDetected: false,
-            findings: [],
-        };
-    }
-
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const modelsToTry = ['gemini-2.5-pro', 'gemini-2.5-flash'];
 
