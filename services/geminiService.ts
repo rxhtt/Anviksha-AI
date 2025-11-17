@@ -1,6 +1,25 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, HarmCategory, HarmBlockThreshold } from "@google/genai";
 import { GeminiAnalysisResponse } from '../types';
+
+const safetySettings = [
+    {
+        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+];
 
 const responseSchema = {
     type: Type.OBJECT,
@@ -63,7 +82,7 @@ Your JSON report must include:
 
 export const analyzeXray = async (imageBase64: string, mimeType: string): Promise<GeminiAnalysisResponse> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const modelsToTry = ['gemini-2.5-flash'];
+    const model = 'gemini-2.5-flash';
 
     const imagePart = {
         inlineData: {
@@ -76,41 +95,34 @@ export const analyzeXray = async (imageBase64: string, mimeType: string): Promis
         text: prompt,
     };
 
-    let lastError: unknown = null;
+    try {
+        console.log(`Attempting analysis with model: ${model}`);
+        const response = await ai.models.generateContent({
+            model: model,
+            contents: [{ parts: [imagePart, textPart] }],
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: responseSchema,
+                temperature: 0.3,
+            },
+            safetySettings: safetySettings,
+        });
 
-    for (const model of modelsToTry) {
-        try {
-            console.log(`Attempting analysis with model: ${model}`);
-            const response = await ai.models.generateContent({
-                model: model,
-                contents: [{ parts: [imagePart, textPart] }],
-                config: {
-                    responseMimeType: "application/json",
-                    responseSchema: responseSchema,
-                    temperature: 0.3,
-                },
-            });
-
-            // Safely access the text response
-            const responseText = response.text;
-            if (typeof responseText !== 'string' || responseText.trim() === '') {
-                throw new Error('Received an empty or invalid response from the model.');
-            }
-
-            const result = JSON.parse(responseText) as GeminiAnalysisResponse;
-            console.log(`Successfully analyzed with model: ${model}`);
-            return result; // Success!
-        } catch (error) {
-            console.error(`Analysis with ${model} failed:`, error);
-            lastError = error;
+        // Safely access the text response
+        const responseText = response.text;
+        if (typeof responseText !== 'string' || responseText.trim() === '') {
+            throw new Error('Received an empty or invalid response from the model.');
         }
+
+        const result = JSON.parse(responseText) as GeminiAnalysisResponse;
+        console.log(`Successfully analyzed with model: ${model}`);
+        return result; // Success!
+    } catch (error) {
+        console.error(`Analysis with ${model} failed:`, error);
+        return {
+            overallAssessment: "An error occurred during analysis. The AI model could not process the request. This might be due to a safety policy violation, an invalid image, or a network issue. Please try again with a different image.",
+            isTuberculosisDetected: false,
+            findings: [],
+        };
     }
-    
-    // If the loop completes without returning, all models have failed.
-    console.error("All model attempts failed.", lastError);
-    return {
-        overallAssessment: "An error occurred during analysis. The AI model could not process the request after multiple attempts. This might be due to a safety policy violation, an invalid image, or a network issue. Please try again with a different image.",
-        isTuberculosisDetected: false,
-        findings: [],
-    };
 };
