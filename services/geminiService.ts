@@ -54,6 +54,15 @@ The report must include:
 
 
 export const analyzeXray = async (imageBase64: string, mimeType: string): Promise<GeminiAnalysisResponse> => {
+    if (!process.env.API_KEY) {
+        console.error("API_KEY environment variable is not set.");
+        return {
+            overallAssessment: "Configuration Error: The API key is missing. Please ensure the API_KEY is configured correctly in the application's environment settings.",
+            isTuberculosisDetected: false,
+            findings: [],
+        };
+    }
+
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const modelsToTry = ['gemini-2.5-pro', 'gemini-2.5-flash'];
 
@@ -83,8 +92,13 @@ export const analyzeXray = async (imageBase64: string, mimeType: string): Promis
                 },
             });
 
-            const jsonText = response.text.trim();
-            const result = JSON.parse(jsonText) as GeminiAnalysisResponse;
+            // Safely access the text response
+            const responseText = response.text;
+            if (typeof responseText !== 'string' || responseText.trim() === '') {
+                throw new Error('Received an empty or invalid response from the model.');
+            }
+
+            const result = JSON.parse(responseText) as GeminiAnalysisResponse;
             console.log(`Successfully analyzed with model: ${model}`);
             return result; // Success!
         } catch (error) {
