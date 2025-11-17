@@ -1,4 +1,5 @@
 
+
 import { GoogleGenAI, Type, HarmCategory, HarmBlockThreshold } from "@google/genai";
 import { GeminiAnalysisResponse } from '../types';
 
@@ -81,7 +82,6 @@ Your JSON report must include:
 
 
 export const analyzeXray = async (imageBase64: string, mimeType: string): Promise<GeminiAnalysisResponse> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const model = 'gemini-2.5-flash';
 
     const imagePart = {
@@ -96,6 +96,11 @@ export const analyzeXray = async (imageBase64: string, mimeType: string): Promis
     };
 
     try {
+        if (!process.env.API_KEY) {
+            throw new Error("API key not found. Please set the API_KEY environment variable.");
+        }
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        
         console.log(`Attempting analysis with model: ${model}`);
         const response = await ai.models.generateContent({
             model: model,
@@ -119,9 +124,27 @@ export const analyzeXray = async (imageBase64: string, mimeType: string): Promis
         return result; // Success!
     } catch (error) {
         console.error(`Analysis with ${model} failed:`, error);
+        
+        let errorMessage = "An error occurred during analysis. The AI model could not process the request. This might be due to a network issue or an invalid image.";
+
+        if (error instanceof Error) {
+            if (error.message.includes('API key') || error.message.includes('API_KEY')) {
+                errorMessage = "Authentication Error: The Gemini API key is missing, invalid, or has not been configured correctly in the environment variables. Please check your Vercel project settings and ensure the API_KEY is set and the project has been redeployed.";
+            } else if (error.message.includes('400')) {
+                errorMessage = "Bad Request: The image may be corrupted, in an unsupported format, or the request to the AI service was malformed. Please try a different image.";
+            } else if (error.message.includes('500')) {
+                errorMessage = "Server Error: The AI service is temporarily unavailable. Please try again in a few moments.";
+            } else if (error.message.includes('safety') || error.message.includes('blocked')) {
+                errorMessage = "Content Blocked: The image was blocked due to the platform's safety policy. This can occasionally happen with medical imaging. Please try a different image if possible."
+            } else if (error.message.includes('empty or invalid response')) {
+                errorMessage = "Invalid Response: The AI model returned an unexpected or empty response. This could be a temporary issue. Please try again.";
+            }
+        }
+
         return {
-            overallAssessment: "An error occurred during analysis. The AI model could not process the request. This might be due to a safety policy violation, an invalid image, or a network issue. Please try again with a different image.",
+            overallAssessment: errorMessage,
             isTuberculosisDetected: false,
+            tuberculosisReport: "",
             findings: [],
         };
     }
