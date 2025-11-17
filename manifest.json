@@ -1,0 +1,21 @@
+{
+  "short_name": "Anviksha AI",
+  "name": "Anviksha AI: AI-Powered Medical Imaging",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "minimal-ui",
+  "theme_color": "#0A0A10",
+  "background_color": "#0A0A10",
+  "description": "The official website for Anviksha AI, showcasing our revolutionary AI-powered medical imaging technology."
+}
