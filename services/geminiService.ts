@@ -55,39 +55,49 @@ The report must include:
 
 export const analyzeXray = async (imageBase64: string, mimeType: string): Promise<GeminiAnalysisResponse> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
-    try {
-        const imagePart = {
-            inlineData: {
-                data: imageBase64,
-                mimeType: mimeType,
-            },
-        };
+    const modelsToTry = ['gemini-2.5-pro', 'gemini-2.5-flash'];
 
-        const textPart = {
-            text: prompt,
-        };
+    const imagePart = {
+        inlineData: {
+            data: imageBase64,
+            mimeType: mimeType,
+        },
+    };
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro',
-            contents: { parts: [imagePart, textPart] },
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: responseSchema,
-                temperature: 0.2,
-            },
-        });
+    const textPart = {
+        text: prompt,
+    };
 
-        const jsonText = response.text.trim();
-        const result = JSON.parse(jsonText) as GeminiAnalysisResponse;
-        return result;
+    let lastError: unknown = null;
 
-    } catch (error) {
-        console.error("Error analyzing X-ray:", error);
-        return {
-            overallAssessment: "An error occurred during analysis. The AI model could not process the request. This might be due to a safety policy violation, an invalid image, or a network issue. Please try again with a different image.",
-            isTuberculosisDetected: false,
-            findings: [],
-        };
+    for (const model of modelsToTry) {
+        try {
+            console.log(`Attempting analysis with model: ${model}`);
+            const response = await ai.models.generateContent({
+                model: model,
+                contents: { parts: [imagePart, textPart] },
+                config: {
+                    responseMimeType: "application/json",
+                    responseSchema: responseSchema,
+                    temperature: 0.2,
+                },
+            });
+
+            const jsonText = response.text.trim();
+            const result = JSON.parse(jsonText) as GeminiAnalysisResponse;
+            console.log(`Successfully analyzed with model: ${model}`);
+            return result; // Success!
+        } catch (error) {
+            console.error(`Analysis with ${model} failed:`, error);
+            lastError = error;
+        }
     }
+    
+    // If the loop completes without returning, all models have failed.
+    console.error("All model attempts failed.", lastError);
+    return {
+        overallAssessment: "An error occurred during analysis. The AI model could not process the request after multiple attempts. This might be due to a safety policy violation, an invalid image, or a network issue. Please try again with a different image.",
+        isTuberculosisDetected: false,
+        findings: [],
+    };
 };
