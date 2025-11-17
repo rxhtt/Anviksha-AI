@@ -25,7 +25,10 @@ const responseSchema = {
     properties: {
         overallAssessment: { type: Type.STRING },
         isTuberculosisDetected: { type: Type.BOOLEAN },
-        tuberculosisReport: { type: Type.STRING, nullable: true },
+        tuberculosisReport: { 
+            type: Type.STRING,
+            description: "A detailed report on the specific TB-related findings observed. This property should be omitted if 'isTuberculosisDetected' is false."
+        },
         findings: {
             type: Type.ARRAY,
             items: {
@@ -46,15 +49,14 @@ const responseSchema = {
                     boundingBox: {
                         type: Type.ARRAY,
                         items: { type: Type.NUMBER },
-                        nullable: true,
-                        description: "An array of four numbers [x_min, y_min, x_max, y_max] representing the bounding box as percentages of the image dimensions."
+                        description: "An array of four numbers [x_min, y_min, x_max, y_max] representing the bounding box as percentages of the image dimensions. Omit this property if a specific location cannot be determined."
                     },
                 },
                 required: ['condition', 'category', 'severity', 'confidence', 'description', 'recommendation'],
             },
         },
     },
-    required: ['overallAssessment', 'isTuberculosisDetected', 'tuberculosisReport', 'findings'],
+    required: ['overallAssessment', 'isTuberculosisDetected', 'findings'],
 };
 
 const prompt = `You are a professional radiologist AI assistant named Anviksha AI, specializing in the analysis of chest X-rays. Your primary task is to identify abnormalities, with a special focus on detecting Tuberculosis (TB).
@@ -72,9 +74,9 @@ When analyzing for Tuberculosis, pay extremely close attention to:
 Your JSON report must include:
 1.  'overallAssessment': A concise, professional summary of all findings. If the image is not a chest X-ray, state this and do not proceed with analysis.
 2.  'isTuberculosisDetected': A boolean value. Set this to 'true' if any signs suggestive of TB are present, even with low confidence. Be conservative and flag potential cases.
-3.  'tuberculosisReport': If 'isTuberculosisDetected' is true, provide a detailed report on the specific TB-related findings observed. Otherwise, this can be null.
+3.  'tuberculosisReport': If 'isTuberculosisDetected' is true, provide a detailed report on the specific TB-related findings observed. Otherwise, this property must be omitted.
 4.  'findings': An array of all key findings (including but not limited to TB).
-    - For each finding: 'condition', 'category' ('Pulmonary', 'Cardiac', 'Skeletal', 'Other'), 'severity' ('Low', 'Medium', 'High', 'Critical'), 'confidence' score (0.0 to 1.0), 'description', 'recommendation', and optional 'boundingBox' ([x_min, y_min, x_max, y_max] as percentages).
+    - For each finding: 'condition', 'category' ('Pulmonary', 'Cardiac', 'Skeletal', 'Other'), 'severity' ('Low', 'Medium', 'High', 'Critical'), 'confidence' score (0.0 to 1.0), 'description', 'recommendation', and an optional 'boundingBox' property ([x_min, y_min, x_max, y_max] as percentages).
     - If TB is detected, ensure it is listed as a finding in this array.
     - If there are no significant abnormalities, return an empty 'findings' array.`;
 
