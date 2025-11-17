@@ -258,77 +258,70 @@ const ProductDemo: React.FC = () => {
                              {/* Analysis Report Column */}
                             <div className="lg:col-span-2 flex flex-col">
                                  <h3 className="text-xl font-semibold text-slate-800 text-center">3. AI Analysis Report</h3>
-                                <div className="mt-4 flex-grow flex flex-col min-h-[480px] bg-slate-100 rounded-lg p-4 border border-slate-200">
+                                <Card className="mt-4 flex-grow flex flex-col min-h-[480px] bg-slate-50 border border-slate-200">
                                     <AnimatePresence mode="wait">
-                                    {isAnalyzing && <AnalysisLoader />}
-                                    {!isAnalyzing && !analysisResult && (
-                                         <motion.div key="placeholder" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="flex-grow flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-slate-300 rounded-lg w-full">
-                                            <IconFileCheck className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                                            <p className="text-slate-500">Your AI-generated report will appear here.</p>
-                                        </motion.div>
-                                    )}
-                                    {analysisResult && (
-                                        <motion.div key="results" variants={containerVariants} initial="hidden" animate="visible" className="w-full h-full flex flex-col">
-                                            <motion.div variants={itemVariants}>
-                                                <h4 className="font-bold text-slate-800 mb-2">Overall Assessment</h4>
-                                                <Card className="p-4 bg-white">
-                                                    <p className="text-sm text-slate-600">{analysisResult.overallAssessment}</p>
-                                                     {analysisResult.isTuberculosisDetected && (
-                                                        <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-md text-red-700 text-xs font-medium flex gap-2 items-center">
-                                                            <IconAlert className="w-4 h-4 flex-shrink-0" /> <span>{analysisResult.tuberculosisReport}</span>
+                                        {isAnalyzing ? (
+                                            <AnalysisLoader key="loader" />
+                                        ) : analysisResult ? (
+                                            <motion.div key="results" variants={containerVariants} initial="hidden" animate="visible" className="p-4 overflow-y-auto space-y-4">
+                                                <motion.div variants={itemVariants}>
+                                                    <h4 className="font-bold text-slate-800">Overall Assessment</h4>
+                                                    <p className="mt-1 text-sm text-slate-600">{analysisResult.overallAssessment}</p>
+                                                </motion.div>
+
+                                                {analysisResult.isTuberculosisDetected && (
+                                                    <motion.div variants={itemVariants} className="p-3 rounded-lg bg-red-50 border border-red-200">
+                                                        <div className="flex items-center">
+                                                            <IconAlert className="h-5 w-5 text-red-600 mr-2" />
+                                                            <h4 className="font-bold text-red-800">Potential Tuberculosis Detected</h4>
                                                         </div>
-                                                     )}
-                                                     {!analysisResult.isTuberculosisDetected && analysisResult.findings.length === 0 && (
-                                                         <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md text-green-700 text-xs font-medium flex gap-2 items-center">
-                                                            <IconFileCheck className="w-4 h-4 flex-shrink-0" /> <span>No significant abnormalities detected.</span>
-                                                        </div>
-                                                     )}
-                                                </Card>
-                                            </motion.div>
-                                            
-                                            <motion.div variants={itemVariants} className="mt-4 flex-grow flex flex-col">
-                                                <h4 className="text-base font-semibold text-slate-600 px-1 mb-2">
-                                                    {analysisResult.findings.length > 0 ? "Key Findings" : "No Key Findings"}
-                                                </h4>
-                                                <div className="flex-grow space-y-2 overflow-y-auto pr-2 -mr-2">
-                                                    {analysisResult.findings.length === 0 && (
-                                                        <motion.div variants={itemVariants} className="text-center text-slate-500 p-4">
-                                                            The analysis did not identify any reportable findings.
-                                                        </motion.div>
+                                                        <p className="mt-1 text-sm text-red-700">{analysisResult.tuberculosisReport}</p>
+                                                    </motion.div>
+                                                )}
+
+                                                <motion.div variants={itemVariants}>
+                                                    <h4 className="font-bold text-slate-800">Key Findings</h4>
+                                                    {analysisResult.findings.length > 0 ? (
+                                                        <ul className="mt-2 space-y-3">
+                                                            {analysisResult.findings.map((finding, index) => {
+                                                                const SeverityIcon = severityConfig[finding.severity].icon;
+                                                                const severityColor = severityConfig[finding.severity].color;
+                                                                const CategoryIcon = categoryConfig[finding.category].icon;
+                                                                return (
+                                                                    <motion.li 
+                                                                        key={index} 
+                                                                        variants={itemVariants} 
+                                                                        className="p-3 rounded-md border border-slate-200 bg-white hover:bg-slate-100/70 cursor-pointer"
+                                                                        onMouseEnter={() => setHoveredFinding(finding)}
+                                                                    >
+                                                                        <div className="flex items-center justify-between">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <CategoryIcon className="h-5 w-5 text-slate-500" />
+                                                                                <span className="font-semibold text-sm text-slate-700">{finding.condition}</span>
+                                                                            </div>
+                                                                            <div className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${severityColor} bg-opacity-10`}>
+                                                                                <SeverityIcon className="h-3 w-3" />
+                                                                                <span>{finding.severity}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <p className="text-xs text-slate-500 mt-1 pl-7">{finding.description}</p>
+                                                                    </motion.li>
+                                                                );
+                                                            })}
+                                                        </ul>
+                                                    ) : (
+                                                        <p className="text-sm text-slate-500 mt-2">No significant abnormalities were detected in the analysis.</p>
                                                     )}
-                                                    {analysisResult.findings.map((finding, index) => {
-                                                        const SeverityIcon = severityConfig[finding.severity].icon;
-                                                        const CategoryIcon = categoryConfig[finding.category].icon;
-                                                        return (
-                                                            <motion.div
-                                                                key={index}
-                                                                variants={itemVariants}
-                                                                onMouseEnter={() => setHoveredFinding(finding)}
-                                                                className="p-3 bg-white rounded-lg transition-all duration-200 cursor-pointer border border-slate-200 hover:border-blue-400 hover:bg-blue-50"
-                                                            >
-                                                                <div className="flex items-center justify-between">
-                                                                    <div className="flex items-center gap-3">
-                                                                        <CategoryIcon className="w-5 h-5 text-slate-500 flex-shrink-0" />
-                                                                        <span className="font-semibold text-slate-800 text-sm">{finding.condition}</span>
-                                                                    </div>
-                                                                    <span className="text-xs font-mono text-blue-700 bg-blue-100 px-2 py-1 rounded-full">{(finding.confidence * 100).toFixed(0)}%</span>
-                                                                </div>
-                                                                <div className="mt-2 text-xs text-slate-500 pl-8">
-                                                                    {finding.description}
-                                                                </div>
-                                                                <div className={`mt-2 pl-8 text-xs font-medium flex items-center gap-2 ${severityConfig[finding.severity].color}`}>
-                                                                    <SeverityIcon className="w-3.5 h-3.5" />
-                                                                    <span>Severity: {finding.severity}</span>
-                                                                </div>
-                                                            </motion.div>
-                                                        );
-                                                    })}
-                                                </div>
+                                                </motion.div>
                                             </motion.div>
-                                        </motion.div>
-                                    )}
+                                        ) : (
+                                            <motion.div key="initial" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-grow flex flex-col items-center justify-center text-center p-4">
+                                                <IconFileCheck className="w-12 h-12 text-slate-400" />
+                                                <p className="mt-4 text-slate-500">Your analysis report will appear here after uploading an image and running the AI.</p>
+                                            </motion.div>
+                                        )}
                                     </AnimatePresence>
-                                </div>
+                                </Card>
                             </div>
                         </div>
                     </div>
