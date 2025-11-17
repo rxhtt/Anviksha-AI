@@ -1,0 +1,32 @@
+<svg width="256" height="256" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <defs>
+        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#2563eb" />
+            <stop offset="100%" stop-color="#60a5fa" />
+        </linearGradient>
+        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f8fafc" />
+            <stop offset="100%" stop-color="#f1f5f9" />
+        </linearGradient>
+    </defs>
+    
+    <!-- Background Squircle -->
+    <rect width="24" height="24" rx="6" fill="url(#bgGradient)"/>
+    
+    <!-- Eye Shape (with thicker stroke for visibility) -->
+    <path
+      d="M3 12 C5 6, 10 4, 12 4 C14 4, 19 6, 21 12 C19 18, 14 20, 12 20 C10 20, 5 18, 3 12 Z"
+      stroke="url(#logoGradient)"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    
+    <!-- Pupil (slightly larger for visibility) -->
+    <circle
+      cx="12"
+      cy="12"
+      r="3"
+      fill="#3b82f6"
+    />
+</svg>
