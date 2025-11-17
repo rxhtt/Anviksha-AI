@@ -99,6 +99,12 @@ const AnalysisLoader: React.FC = () => {
             }
         })
     };
+    
+    const pulseTransition = {
+        duration: 1.5,
+        ease: "easeInOut",
+        repeat: Infinity,
+    };
 
     return (
         <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center flex flex-col items-center justify-center h-full">
@@ -117,12 +123,18 @@ const AnalysisLoader: React.FC = () => {
                 <motion.path custom={4} variants={pathVariants} d="M15 12 L12 8" stroke="url(#loaderGradient)" strokeWidth="1" />
                 <motion.path custom={5} variants={pathVariants} d="M15 12 L12 16" stroke="url(#loaderGradient)" strokeWidth="1" />
                  {/* Nodes */}
-                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:0.7}}} cx="4" cy="12" r="2" fill="#2563eb" />
-                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:0.8}}} cx="9" cy="12" r="2.5" fill="#2563eb" />
-                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:1.0}}} cx="12" cy="8" r="2" fill="#60a5fa" />
-                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:1.0}}} cx="12" cy="16" r="2" fill="#60a5fa" />
-                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:0.9}}} cx="15" cy="12" r="2.5" fill="#2563eb" />
-                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:0.7}}} cx="20" cy="12" r="2" fill="#2563eb" />
+                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:0.7, type: 'spring', stiffness: 300, damping: 20}}} cx="4" cy="12" r="2" fill="#2563eb" />
+                <motion.circle 
+                    initial={{scale:0}} 
+                    animate={{scale:[1, 1.2, 1], transition:{...pulseTransition, delay: 0.8}}} 
+                    cx="9" cy="12" r="2.5" fill="#2563eb" />
+                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:1.0, type: 'spring', stiffness: 300, damping: 20}}} cx="12" cy="8" r="2" fill="#60a5fa" />
+                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:1.0, type: 'spring', stiffness: 300, damping: 20}}} cx="12" cy="16" r="2" fill="#60a5fa" />
+                <motion.circle 
+                    initial={{scale:0}} 
+                    animate={{scale:[1, 1.2, 1], transition:{...pulseTransition, delay: 0.9, repeatDelay: 0.3}}} 
+                    cx="15" cy="12" r="2.5" fill="#2563eb" />
+                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:0.7, type: 'spring', stiffness: 300, damping: 20}}} cx="20" cy="12" r="2" fill="#2563eb" />
             </motion.svg>
             <AnimatePresence mode="wait">
                 <motion.p
