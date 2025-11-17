@@ -98,6 +98,7 @@ const AnalysisLoader: React.FC = () => {
 const ProductDemo: React.FC = () => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+    const [analysisError, setAnalysisError] = useState<string | null>(null);
     const [hoveredFinding, setHoveredFinding] = useState<AnalysisFinding | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -118,6 +119,7 @@ const ProductDemo: React.FC = () => {
             reader.readAsDataURL(file);
 
             setAnalysisResult(null);
+            setAnalysisError(null);
             setHoveredFinding(null);
         }
     }, []);
@@ -149,13 +151,16 @@ const ProductDemo: React.FC = () => {
         }
         setIsAnalyzing(true);
         setAnalysisResult(null);
+        setAnalysisError(null);
         try {
             const { base64, mimeType } = await fileToBase64(imageFile);
             const result = await analyzeXray(base64, mimeType);
             setAnalysisResult(result);
         } catch (error) {
             console.error("Analysis failed:", error);
-            toast.error('Failed to analyze the image. Please try again.');
+            const message = error instanceof Error ? error.message : 'An unknown error occurred.';
+            setAnalysisError(message);
+            toast.error('Analysis Failed');
         } finally {
             setIsAnalyzing(false);
         }
@@ -169,7 +174,6 @@ const ProductDemo: React.FC = () => {
         },
     };
 
-    // FIX: Explicitly type `itemVariants` with `Variants` to resolve type inference issues.
     const itemVariants: Variants = {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } },
@@ -262,6 +266,12 @@ const ProductDemo: React.FC = () => {
                                     <AnimatePresence mode="wait">
                                         {isAnalyzing ? (
                                             <AnalysisLoader key="loader" />
+                                        ) : analysisError ? (
+                                            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-grow flex flex-col items-center justify-center text-center p-6">
+                                                <IconAlert className="w-12 h-12 text-red-500" />
+                                                <h4 className="mt-4 font-bold text-red-700">Analysis Failed</h4>
+                                                <p className="mt-2 text-sm text-slate-600 max-w-sm">{analysisError}</p>
+                                            </motion.div>
                                         ) : analysisResult ? (
                                             <motion.div key="results" variants={containerVariants} initial="hidden" animate="visible" className="p-4 overflow-y-auto space-y-4">
                                                 <motion.div variants={itemVariants}>

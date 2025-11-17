@@ -1,10 +1,10 @@
 
 import React from 'react';
-// FIX: Import HTMLMotionProps for correct prop typing.
-import { motion, HTMLMotionProps } from 'framer-motion';
+// FIX: Import motion component for correct prop typing.
+import { motion } from 'framer-motion';
 
-// FIX: Extend HTMLMotionProps<'button'> to ensure compatibility with motion component props.
-interface ButtonProps extends HTMLMotionProps<'button'> {
+// FIX: Extend component props from motion.button to ensure compatibility with motion component props.
+interface ButtonProps extends React.ComponentProps<typeof motion.button> {
   children?: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'outline';
   icon?: React.ReactNode;

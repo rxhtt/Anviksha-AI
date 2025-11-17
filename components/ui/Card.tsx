@@ -1,9 +1,10 @@
-import React from 'react';
-// FIX: Import HTMLMotionProps for correct prop typing, as AnimationProps is not a valid export.
-import { motion, HTMLMotionProps } from 'framer-motion';
 
-// FIX: Extend HTMLMotionProps<'div'> for compatibility with motion component props like `whileHover`.
-interface CardProps extends HTMLMotionProps<'div'> {
+import React from 'react';
+// FIX: Use motion component from framer-motion.
+import { motion } from 'framer-motion';
+
+// FIX: Extend component props from motion.div for compatibility with motion component props like `whileHover`.
+interface CardProps extends React.ComponentProps<typeof motion.div> {
   children: React.ReactNode;
 }
 

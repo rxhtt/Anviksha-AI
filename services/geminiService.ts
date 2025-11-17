@@ -1,5 +1,3 @@
-
-
 import { GoogleGenAI, Type, HarmCategory, HarmBlockThreshold } from "@google/genai";
 import { GeminiAnalysisResponse } from '../types';
 
@@ -96,9 +94,6 @@ export const analyzeXray = async (imageBase64: string, mimeType: string): Promis
     };
 
     try {
-        if (!process.env.API_KEY) {
-            throw new Error("API key not found. Please set the API_KEY environment variable.");
-        }
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         
         console.log(`Attempting analysis with model: ${model}`);
@@ -113,39 +108,33 @@ export const analyzeXray = async (imageBase64: string, mimeType: string): Promis
             safetySettings: safetySettings,
         });
 
-        // Safely access the text response
         const responseText = response.text;
         if (typeof responseText !== 'string' || responseText.trim() === '') {
-            throw new Error('Received an empty or invalid response from the model.');
+            throw new Error('Invalid Response: The AI model returned an unexpected or empty response. This could be a temporary issue. Please try again.');
         }
 
         const result = JSON.parse(responseText) as GeminiAnalysisResponse;
         console.log(`Successfully analyzed with model: ${model}`);
-        return result; // Success!
+        return result;
     } catch (error) {
         console.error(`Analysis with ${model} failed:`, error);
         
-        let errorMessage = "An error occurred during analysis. The AI model could not process the request. This might be due to a network issue or an invalid image.";
+        let errorMessage = "An unknown error occurred during analysis. Please check the console for details.";
 
         if (error instanceof Error) {
-            if (error.message.includes('API key') || error.message.includes('API_KEY')) {
-                errorMessage = "Authentication Error: The Gemini API key is missing, invalid, or has not been configured correctly in the environment variables. Please check your Vercel project settings and ensure the API_KEY is set and the project has been redeployed.";
+            if (error.message.includes('API key') || error.message.includes('API_KEY') || error.message.includes('Authentication Error')) {
+                errorMessage = "Authentication Error: The Gemini API key is missing, invalid, or has not been configured correctly in the environment variables. Please ensure the API key is set correctly.";
             } else if (error.message.includes('400')) {
                 errorMessage = "Bad Request: The image may be corrupted, in an unsupported format, or the request to the AI service was malformed. Please try a different image.";
-            } else if (error.message.includes('500')) {
+            } else if (error.message.includes('500') || error.message.includes('503')) {
                 errorMessage = "Server Error: The AI service is temporarily unavailable. Please try again in a few moments.";
             } else if (error.message.includes('safety') || error.message.includes('blocked')) {
                 errorMessage = "Content Blocked: The image was blocked due to the platform's safety policy. This can occasionally happen with medical imaging. Please try a different image if possible."
-            } else if (error.message.includes('empty or invalid response')) {
-                errorMessage = "Invalid Response: The AI model returned an unexpected or empty response. This could be a temporary issue. Please try again.";
+            } else {
+                errorMessage = error.message;
             }
         }
-
-        return {
-            overallAssessment: errorMessage,
-            isTuberculosisDetected: false,
-            tuberculosisReport: "",
-            findings: [],
-        };
+        
+        throw new Error(errorMessage);
     }
 };
