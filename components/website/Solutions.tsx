@@ -23,14 +23,14 @@ const Solutions: React.FC = () => {
         </motion.div>
 
         {/* Bento Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[400px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-auto md:auto-rows-[400px]">
           
           {/* Card 1: Diagnostics (Large, span 2 cols) */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="md:col-span-2 relative group rounded-3xl overflow-hidden bg-white shadow-xl shadow-slate-200/50 border border-slate-200"
+            className="md:col-span-2 relative group rounded-3xl overflow-hidden bg-white shadow-xl shadow-slate-200/50 border border-slate-200 min-h-[400px]"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 to-blue-800/90 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <img 
@@ -55,7 +55,7 @@ const Solutions: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="md:row-span-2 relative group rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 shadow-2xl"
+            className="md:row-span-2 relative group rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 shadow-2xl min-h-[400px]"
           >
              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-red-500/20 via-transparent to-transparent" />
              <img 
@@ -83,7 +83,7 @@ const Solutions: React.FC = () => {
              whileInView={{ opacity: 1, y: 0 }}
              viewport={{ once: true }}
              transition={{ delay: 0.2 }}
-             className="relative group rounded-3xl overflow-hidden bg-white shadow-xl shadow-slate-200/50 border border-slate-200 p-8 flex flex-col justify-between"
+             className="relative group rounded-3xl overflow-hidden bg-white shadow-xl shadow-slate-200/50 border border-slate-200 p-8 flex flex-col justify-between min-h-[400px]"
           >
              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
                  <IconPill size={120} className="text-green-600" />
@@ -108,16 +108,23 @@ const Solutions: React.FC = () => {
              whileInView={{ opacity: 1, y: 0 }}
              viewport={{ once: true }}
              transition={{ delay: 0.3 }}
-             className="relative group rounded-3xl overflow-hidden bg-gradient-to-br from-violet-600 to-purple-700 shadow-xl shadow-purple-500/20 p-8 flex flex-col justify-between text-white"
+             className="relative group rounded-3xl overflow-hidden bg-slate-900 shadow-xl shadow-purple-500/20 p-8 flex flex-col justify-between text-white min-h-[400px]"
           >
-              <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
-             <div>
+              {/* Updated Image for better visibility and empathy */}
+             <img 
+                src="https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=1200&auto=format&fit=crop" 
+                alt="Mental Health & Therapy - Serene Support" 
+                className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay transition-transform duration-700 group-hover:scale-105"
+             />
+             <div className="absolute inset-0 bg-gradient-to-b from-purple-900/80 to-violet-900/90 mix-blend-multiply z-10"></div>
+             
+             <div className="relative z-20">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4 text-white border border-white/20">
                     <IconBrain size={24} />
                 </div>
                 <h3 className="text-2xl font-bold">AI Therapy</h3>
              </div>
-             <p className="text-purple-100/90 font-medium leading-relaxed">
+             <p className="text-purple-100/90 font-medium leading-relaxed relative z-20">
                  24/7 empathetic mental health support trained on CBT frameworks. A safe space for everyone.
              </p>
           </motion.div>

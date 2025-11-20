@@ -20,7 +20,7 @@ const Footer: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-5xl md:text-7xl font-bold text-white tracking-tighter mb-8 max-w-4xl"
+                        className="text-4xl md:text-7xl font-bold text-white tracking-tighter mb-8 max-w-4xl"
                     >
                         Ready to democratize healthcare?
                     </motion.h2>
@@ -81,8 +81,8 @@ const Footer: React.FC = () => {
                 </div>
             </div>
 
-            {/* Giant Watermark - Moved to absolute bottom, z-index 0 to be behind content but visible */}
-            <div className="absolute bottom-[-5%] left-1/2 -translate-x-1/2 w-full flex justify-center overflow-hidden pointer-events-none z-0">
+            {/* Giant Watermark - Positioned to be purely decorative and not interfere with Pricing section */}
+            <div className="absolute bottom-[-2%] left-1/2 -translate-x-1/2 w-full flex justify-center overflow-hidden pointer-events-none z-[-1]">
                 <h1 className="text-[23vw] font-black text-slate-900 select-none leading-none tracking-tighter whitespace-nowrap opacity-80">
                     ANVIKSHA
                 </h1>

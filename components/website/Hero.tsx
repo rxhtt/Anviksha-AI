@@ -49,7 +49,7 @@ const Hero: React.FC = () => {
                     <span className="text-sm font-semibold text-slate-600 tracking-wide">Now Live: Digital Hospital 1.0</span>
                 </motion.div>
 
-                <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-slate-900 tracking-tighter leading-[0.9] mb-8">
+                <h1 className="text-4xl sm:text-5xl md:text-8xl lg:text-9xl font-black text-slate-900 tracking-tighter leading-[1.1] sm:leading-[0.9] mb-8 break-words max-w-[90vw]">
                     <motion.span
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -62,7 +62,7 @@ const Hero: React.FC = () => {
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                        className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-500 pb-4"
+                        className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-500 pb-2 sm:pb-4"
                     >
                         Superintelligence
                     </motion.span>
@@ -72,7 +72,7 @@ const Hero: React.FC = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.3 }}
-                    className="max-w-2xl mx-auto text-xl md:text-2xl text-slate-600 leading-relaxed font-medium"
+                    className="max-w-2xl mx-auto text-lg sm:text-xl md:text-2xl text-slate-600 leading-relaxed font-medium px-4"
                 >
                     The first <span className="text-slate-900 font-bold">AI-Native Hospital</span>. 
                     Diagnose diseases, triage emergencies, and slash pharmacy costs—instantly, from any device.
@@ -85,7 +85,7 @@ const Hero: React.FC = () => {
                     className="mt-12 flex flex-col sm:flex-row items-center gap-6"
                 >
                     <a href="https://anviksha-device.vercel.app/" target="_blank" rel="noopener noreferrer">
-                        <Button icon={<IconActivity />} size="xl" variant="primary" className="h-16 px-10 text-lg shadow-blue-500/30 shadow-xl hover:shadow-2xl hover:shadow-blue-500/40 hover:-translate-y-1">
+                        <Button icon={<IconActivity />} size="xl" variant="primary" className="h-14 sm:h-16 px-8 sm:px-10 text-base sm:text-lg shadow-blue-500/30 shadow-xl hover:shadow-2xl hover:shadow-blue-500/40 hover:-translate-y-1">
                         Launch Platform
                         </Button>
                     </a>

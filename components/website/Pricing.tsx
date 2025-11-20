@@ -41,7 +41,7 @@ const Pricing: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
-                className="text-5xl md:text-7xl font-black text-white tracking-tight mb-6"
+                className="text-4xl md:text-7xl font-black text-white tracking-tight mb-6"
             >
                 Healthcare shouldn't <br/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500">have a price tag.</span>
@@ -62,12 +62,12 @@ const Pricing: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2">
                     
                     {/* Left Side: The Price */}
-                    <div className="p-12 md:p-16 flex flex-col justify-center items-center bg-gradient-to-br from-slate-800 to-slate-900 relative border-b md:border-b-0 md:border-r border-slate-700">
+                    <div className="p-8 md:p-16 flex flex-col justify-center items-center bg-gradient-to-br from-slate-800 to-slate-900 relative border-b md:border-b-0 md:border-r border-slate-700">
                         <div className="text-slate-400 text-lg font-medium mb-4 uppercase tracking-widest">Monthly Cost</div>
                         <div className="flex items-start">
-                            <span className="text-4xl font-bold text-slate-500 mt-4">$</span>
+                            <span className="text-4xl font-bold text-slate-500 mt-2 sm:mt-4">$</span>
                             <motion.span 
-                                className="text-[120px] md:text-[160px] font-black text-white leading-none tracking-tighter"
+                                className="text-6xl sm:text-8xl md:text-[120px] lg:text-[160px] font-black text-white leading-none tracking-tighter"
                             >
                                 <motion.span>{priceDisplay}</motion.span>
                             </motion.span>
@@ -83,7 +83,7 @@ const Pricing: React.FC = () => {
                     </div>
 
                     {/* Right Side: Features */}
-                    <div className="p-12 md:p-16 flex flex-col justify-center bg-slate-800/50 backdrop-blur-sm">
+                    <div className="p-6 sm:p-8 md:p-16 flex flex-col justify-center bg-slate-800/50 backdrop-blur-sm">
                         <h3 className="text-3xl font-bold text-white mb-8">Everything Included</h3>
                         <ul className="space-y-6">
                             {[
@@ -100,7 +100,7 @@ const Pricing: React.FC = () => {
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: 0.5 + (i * 0.1) }}
-                                    className="flex items-center gap-4 text-lg text-slate-300"
+                                    className="flex items-center gap-4 text-base md:text-lg text-slate-300"
                                 >
                                     <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 shrink-0">
                                         <IconCheckCircle size={14} />
@@ -114,11 +114,13 @@ const Pricing: React.FC = () => {
                             <a href="https://anviksha-device.vercel.app/" target="_blank" rel="noopener noreferrer">
                                 <Button 
                                     size="xl" 
-                                    className="w-full justify-center bg-white text-slate-900 hover:bg-blue-50 hover:text-blue-700 border-none shadow-xl shadow-white/10 group py-5"
-                                    icon={<IconInfinity className="text-slate-300 group-hover:text-blue-500 transition-colors" />}
+                                    className="w-full justify-center bg-white text-slate-900 hover:bg-blue-50 hover:text-blue-700 border-none shadow-xl shadow-white/10 group py-8 relative overflow-hidden"
                                 >
-                                    <span className="font-black text-3xl italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 group-hover:from-blue-500 group-hover:to-pink-500 transition-all scale-105">
-                                        ANVIKSHA
+                                    <span className="relative z-10 flex items-center gap-3 font-black tracking-[0.2em] text-2xl sm:text-3xl">
+                                        ANVIKSHA <IconInfinity size={32} className="text-blue-600" />
+                                    </span>
+                                    <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-7xl sm:text-9xl font-black opacity-[0.07] tracking-tighter select-none pointer-events-none whitespace-nowrap">
+                                        LAUNCH
                                     </span>
                                 </Button>
                             </a>
