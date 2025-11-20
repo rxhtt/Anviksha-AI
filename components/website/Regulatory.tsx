@@ -1,80 +1,97 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { IconChevronDown } from '../Icons';
 
-const accordionItems = [
-    {
-        title: 'AI as a Medical Device (SaMD)',
-        content: 'Anviksha AI is developed as a Software as a Medical Device (SaMD), adhering to the highest standards of safety and efficacy as outlined by international regulatory bodies like the FDA and the International Medical Device Regulators Forum (IMDRF).'
-    },
-    {
-        title: 'FDA Clearance Pathways',
-        content: 'We are actively pursuing the FDA 510(k) clearance pathway, which requires demonstrating that our device is substantially equivalent to a legally marketed device. Our rigorous validation processes are designed to meet and exceed these stringent requirements.'
-    },
-    {
-        title: 'Data Privacy & HIPAA Compliance',
-        content: 'Patient data privacy is paramount. Our platform is architected to be fully HIPAA compliant, utilizing end-to-end encryption and robust data anonymization techniques to ensure the utmost security and confidentiality of protected health information (PHI).'
-    }
-];
+import React from 'react';
+import { motion } from 'framer-motion';
+import { IconCheckCircle, IconShield, IconLock } from '../Icons';
 
 const Regulatory: React.FC = () => {
-    const [openIndex, setOpenIndex] = useState<number | null>(0);
-
     return (
-        <section id="regulatory" className="py-20 lg:py-32 bg-slate-100">
+        <section id="regulatory" className="py-32 bg-slate-50">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <motion.div 
-                  initial={{ opacity: 0, y:20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.5 }}
-                  transition={{ duration: 0.7 }}
-                  className="text-center max-w-3xl mx-auto"
-                >
-                    <h2 className="text-4xl md:text-5xl font-bold text-slate-900">Regulatory & Compliance</h2>
-                    <p className="mt-4 text-lg text-slate-600">
-                        Building the future of medical AI requires a deep commitment to regulatory compliance, safety, and data privacy.
-                    </p>
-                </motion.div>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
+                    
+                    <div className="lg:col-span-5">
+                        <motion.h2 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight mb-6"
+                        >
+                            Safety is our <br/>
+                            <span className="text-blue-600">North Star.</span>
+                        </motion.h2>
+                        <motion.p 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.1 }}
+                            className="text-lg text-slate-600 leading-relaxed mb-8"
+                        >
+                            We are building a medical device, not just an app. Every line of code is written with patient safety, data privacy, and regulatory compliance in mind.
+                        </motion.p>
+                    </div>
 
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.7, delay: 0.2 }}
-                    className="mt-16 max-w-3xl mx-auto"
-                >
-                    {accordionItems.map((item, index) => (
-                        <div key={index} className="border-b border-slate-200">
-                            <button
-                                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                                className="w-full flex justify-between items-center py-6 text-left"
-                            >
-                                <span className="text-lg font-semibold text-slate-800">{item.title}</span>
-                                <motion.div
-                                    animate={{ rotate: openIndex === index ? 180 : 0 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    <IconChevronDown className="w-6 h-6 text-slate-400" />
-                                </motion.div>
-                            </button>
-                            <AnimatePresence>
-                                {openIndex === index && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                        className="overflow-hidden"
-                                    >
-                                        <p className="pb-6 text-slate-600">
-                                            {item.content}
-                                        </p>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    ))}
-                </motion.div>
+                    <div className="lg:col-span-7 grid grid-cols-1 gap-8">
+                        
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.2 }}
+                            className="flex gap-6"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0 text-blue-600">
+                                <IconCheckCircle size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-2">FDA & SaMD Alignment</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    Developed strictly as a Software as a Medical Device (SaMD). We are actively pursuing FDA 510(k) clearance by demonstrating substantial equivalence to existing predicate devices.
+                                </p>
+                            </div>
+                        </motion.div>
+
+                        <div className="w-full h-px bg-slate-200" />
+
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.3 }}
+                            className="flex gap-6"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0 text-blue-600">
+                                <IconLock size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-2">HIPAA & GDPR Ready</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    Your data is sacred. We employ military-grade AES-256 encryption for data at rest and TLS 1.3 for data in transit. We do not sell patient data.
+                                </p>
+                            </div>
+                        </motion.div>
+
+                         <div className="w-full h-px bg-slate-200" />
+
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.4 }}
+                            className="flex gap-6"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0 text-blue-600">
+                                <IconShield size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-2">Clinical Governance</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    Oversight by a board of certified radiologists and medical professionals ensuring that AI outputs are clinically relevant and safe.
+                                </p>
+                            </div>
+                        </motion.div>
+
+                    </div>
+                </div>
             </div>
         </section>
     );

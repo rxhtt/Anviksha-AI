@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Logo from '../Logo';
@@ -6,6 +7,7 @@ const navItems = [
   { label: 'Solutions', id: 'solutions' },
   { label: 'Platform', id: 'platform' },
   { label: 'Product', id: 'product' },
+  { label: 'Pricing', id: 'pricing' },
   { label: 'Clinical Evidence', id: 'evidence' },
   { label: 'Regulatory', id: 'regulatory' },
 ];

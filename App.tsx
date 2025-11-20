@@ -12,6 +12,7 @@ import ProductDemo from './components/website/ProductDemo';
 import ClinicalEvidence from './components/website/ClinicalEvidence';
 import Regulatory from './components/website/Regulatory';
 import Footer from './components/website/Footer';
+import Pricing from './components/website/Pricing';
 
 const App: React.FC = () => {
   const { scrollYProgress } = useScroll();
@@ -39,6 +40,7 @@ const App: React.FC = () => {
         <Solutions />
         <Platform />
         <ProductDemo />
+        <Pricing />
         <ClinicalEvidence />
         <Regulatory />
       </main>

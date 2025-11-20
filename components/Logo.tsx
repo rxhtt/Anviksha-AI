@@ -1,7 +1,12 @@
+
 import React from 'react';
 import { motion, Variants } from 'framer-motion';
 
-const Logo: React.FC = () => {
+interface LogoProps {
+  light?: boolean;
+}
+
+const Logo: React.FC<LogoProps> = ({ light = false }) => {
   const pathVariants: Variants = {
     hidden: { pathLength: 0, opacity: 0 },
     visible: {
@@ -65,7 +70,7 @@ const Logo: React.FC = () => {
           variants={pupilVariants}
         />
       </motion.svg>
-      <span className="text-2xl font-bold text-slate-800 tracking-tight">Anviksha AI</span>
+      <span className={`text-2xl font-bold tracking-tight ${light ? 'text-white' : 'text-slate-800'}`}>Anviksha AI</span>
     </div>
   );
 };

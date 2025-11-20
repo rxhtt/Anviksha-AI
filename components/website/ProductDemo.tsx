@@ -1,372 +1,272 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
-import toast from 'react-hot-toast';
-import { AnalysisResult, AnalysisFinding, AnalysisSeverity } from '../../types';
+
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import { IconAlert, IconCheckCircle, IconLung, IconHeart, IconBone, IconCircleDot, IconFileCheck, IconUpload, IconArrowRight } from '../Icons';
-
-
-const severityConfig: Record<AnalysisSeverity, { color: string, icon: React.ElementType }> = {
-    'Low': { color: 'text-green-600', icon: IconCheckCircle },
-    'Medium': { color: 'text-yellow-600', icon: IconAlert },
-    'High': { color: 'text-orange-500', icon: IconAlert },
-    'Critical': { color: 'text-red-600', icon: IconAlert },
-};
-
-const categoryConfig: Record<AnalysisFinding['category'], { icon: React.ElementType }> = {
-    'Pulmonary': { icon: IconLung },
-    'Cardiac': { icon: IconHeart },
-    'Skeletal': { icon: IconBone },
-    'Other': { icon: IconCircleDot },
-};
-
-const loadingTexts = [
-    "Initializing Analysis...",
-    "Loading Diagnostic Models...",
-    "Scanning Image Layers...",
-    "Identifying Key Structures...",
-    "Compiling Findings...",
-    "Generating Report..."
-];
-
-const mockAbnormalResult: AnalysisResult = {
-  overallAssessment: "The chest X-ray demonstrates significant cardiomegaly, with a cardiothoracic ratio exceeding 50%. There are prominent signs of pulmonary venous congestion and interstitial edema, particularly in the lower lung zones. No focal consolidation or pneumothorax is identified. Skeletal structures appear intact.",
-  isTuberculosisDetected: false,
-  findings: [
-    {
-      condition: "Cardiomegaly",
-      category: "Cardiac",
-      severity: "High",
-      confidence: 0.96,
-      description: "The cardiac silhouette is markedly enlarged, with a cardiothoracic ratio greater than 0.5, indicative of cardiomegaly.",
-      recommendation: "Clinical correlation for symptoms of heart failure is advised. An echocardiogram is recommended for further evaluation of cardiac function.",
-      boundingBox: [0.25, 0.4, 0.75, 0.9]
-    },
-    {
-      condition: "Pulmonary Edema",
-      category: "Pulmonary",
-      severity: "High",
-      confidence: 0.91,
-      description: "Diffuse interstitial opacities and increased vascular markings are present, consistent with pulmonary edema, likely secondary to cardiac dysfunction.",
-      recommendation: "Immediate clinical assessment for respiratory distress and consideration for diuretic therapy is recommended.",
-      boundingBox: [0.15, 0.45, 0.85, 0.9]
-    }
-  ]
-};
-
-const mockNormalResult: AnalysisResult = {
-    overallAssessment: "The chest X-ray appears clear. Lungs are well-aerated with no signs of consolidation, nodules, or pneumothorax. The cardiac silhouette and skeletal structures are within normal limits.",
-    isTuberculosisDetected: false,
-    findings: []
-};
-
-const samples = {
-    normal: {
-        id: 'normal',
-        title: 'Normal Chest X-ray',
-        description: 'A healthy scan with no significant findings.',
-        imageUrl: '/images/xray-normal.jpg',
-        analysisResult: mockNormalResult,
-    },
-    abnormal: {
-        id: 'abnormal',
-        title: 'Cardiomegaly & Edema Case',
-        description: 'Shows an enlarged heart and signs of fluid in the lungs.',
-        imageUrl: '/images/xray-abnormal.jpg',
-        analysisResult: mockAbnormalResult,
-    }
-};
-
-const AnalysisLoader: React.FC = () => {
-    const [currentTextIndex, setCurrentTextIndex] = useState(0);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentTextIndex(prev => (prev + 1) % loadingTexts.length);
-        }, 1500);
-        return () => clearInterval(interval);
-    }, []);
-
-    const pathVariants: Variants = {
-        hidden: { pathLength: 0, opacity: 0 },
-        visible: (i: number) => ({
-            pathLength: 1,
-            opacity: 1,
-            transition: {
-                pathLength: { delay: i * 0.1, type: "spring", duration: 1.5, bounce: 0 },
-                opacity: { delay: i * 0.1, duration: 0.1 }
-            }
-        })
-    };
-    
-    const pulseTransition = {
-        duration: 1.5,
-        ease: "easeInOut",
-        repeat: Infinity,
-    };
-
-    return (
-        <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center flex flex-col items-center justify-center h-full">
-            <motion.svg width="80" height="80" viewBox="0 0 24 24" initial="hidden" animate="visible">
-                <defs>
-                    <linearGradient id="loaderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#2563eb" />
-                        <stop offset="100%" stopColor="#60a5fa" />
-                    </linearGradient>
-                </defs>
-                 {/* Neuron paths */}
-                <motion.path custom={0} variants={pathVariants} d="M4 12 L9 12" stroke="url(#loaderGradient)" strokeWidth="1" />
-                <motion.path custom={1} variants={pathVariants} d="M15 12 L20 12" stroke="url(#loaderGradient)" strokeWidth="1" />
-                <motion.path custom={2} variants={pathVariants} d="M9 12 L12 8" stroke="url(#loaderGradient)" strokeWidth="1" />
-                <motion.path custom={3} variants={pathVariants} d="M9 12 L12 16" stroke="url(#loaderGradient)" strokeWidth="1" />
-                <motion.path custom={4} variants={pathVariants} d="M15 12 L12 8" stroke="url(#loaderGradient)" strokeWidth="1" />
-                <motion.path custom={5} variants={pathVariants} d="M15 12 L12 16" stroke="url(#loaderGradient)" strokeWidth="1" />
-                 {/* Nodes */}
-                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:0.7, type: 'spring', stiffness: 300, damping: 20}}} cx="4" cy="12" r="2" fill="#2563eb" />
-                <motion.circle 
-                    initial={{scale:0}} 
-                    animate={{scale:[1, 1.2, 1], transition:{...pulseTransition, delay: 0.8}}} 
-                    cx="9" cy="12" r="2.5" fill="#2563eb" />
-                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:1.0, type: 'spring', stiffness: 300, damping: 20}}} cx="12" cy="8" r="2" fill="#60a5fa" />
-                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:1.0, type: 'spring', stiffness: 300, damping: 20}}} cx="12" cy="16" r="2" fill="#60a5fa" />
-                <motion.circle 
-                    initial={{scale:0}} 
-                    animate={{scale:[1, 1.2, 1], transition:{...pulseTransition, delay: 0.9, repeatDelay: 0.3}}} 
-                    cx="15" cy="12" r="2.5" fill="#2563eb" />
-                <motion.circle initial={{scale:0}} animate={{scale:1, transition:{delay:0.7, type: 'spring', stiffness: 300, damping: 20}}} cx="20" cy="12" r="2" fill="#2563eb" />
-            </motion.svg>
-            <AnimatePresence mode="wait">
-                <motion.p
-                    key={currentTextIndex}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                    className="mt-4 text-slate-500"
-                >
-                    {loadingTexts[currentTextIndex]}
-                </motion.p>
-            </AnimatePresence>
-        </motion.div>
-    );
-};
-
+import { 
+    IconActivity, 
+    IconCheckCircle, 
+    IconAlert, 
+    IconPill, 
+    IconSearch, 
+    IconZap,
+    IconBrain,
+    IconStethoscope,
+    IconFileText,
+    IconUser,
+    IconSettings,
+    IconMenu
+} from '../Icons';
 
 const ProductDemo: React.FC = () => {
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-    const [hoveredFinding, setHoveredFinding] = useState<AnalysisFinding | null>(null);
-    const [selectedSample, setSelectedSample] = useState<'normal' | 'abnormal' | null>(null);
+    const ref = useRef<HTMLDivElement>(null);
+    
+    // Parallax Tilt Effect Logic
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
 
-    const handleSelectSample = (sampleId: 'normal' | 'abnormal') => {
-        setSelectedSample(sampleId);
-        setAnalysisResult(null);
-        setHoveredFinding(null);
+    const mouseXSpring = useSpring(x);
+    const mouseYSpring = useSpring(y);
+
+    const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["7deg", "-7deg"]);
+    const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-7deg", "7deg"]);
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (!ref.current) return;
+        const rect = ref.current.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const xPct = mouseX / width - 0.5;
+        const yPct = mouseY / height - 0.5;
+        x.set(xPct);
+        y.set(yPct);
     };
 
-    const handleStartAnalysis = () => {
-        if (!selectedSample) {
-            toast.error('Please select a sample X-ray first.');
-            return;
-        }
-
-        setIsAnalyzing(true);
-        setAnalysisResult(null);
-
-        // Simulate AI analysis time for the demo
-        setTimeout(() => {
-            setAnalysisResult(samples[selectedSample].analysisResult);
-            setIsAnalyzing(false);
-            toast.success('Analysis Complete!');
-        }, 3500);
-    };
-
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: { staggerChildren: 0.1, delayChildren: 0.2 },
-        },
-    };
-
-    const itemVariants: Variants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } },
+    const handleMouseLeave = () => {
+        x.set(0);
+        y.set(0);
     };
 
     return (
-        <section id="product" className="py-20 lg:py-32 bg-slate-100 overflow-hidden">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="product" className="py-20 lg:py-32 bg-slate-950 overflow-hidden relative">
+            {/* Ambient Background Glows */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px]" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px]" />
+
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <motion.div
-                    initial={{ opacity: 0, y:20 }}
+                    initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.5 }}
                     transition={{ duration: 0.7 }}
-                    className="text-center max-w-3xl mx-auto"
+                    className="text-center max-w-4xl mx-auto mb-16"
                 >
-                    <h2 className="text-4xl md:text-5xl font-bold text-slate-900">Experience the Platform</h2>
-                    <p className="mt-4 text-lg text-slate-600">
-                        Select a sample chest X-ray and run the analysis to see how our platform identifies and reports on clinical findings in seconds.
+                    <div className="inline-block px-3 py-1 mb-4 text-xs font-semibold tracking-wider text-blue-400 uppercase bg-blue-500/10 rounded-full border border-blue-500/20">
+                        Platform Preview
+                    </div>
+                    <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+                        The Digital Hospital Operating System
+                    </h2>
+                    <p className="mt-6 text-lg text-slate-400 max-w-2xl mx-auto">
+                        Experience the power of a fully integrated medical ecosystem. From complex diagnostics to pharmacy savings, everything happens in real-time.
                     </p>
+                    
+                    <div className="mt-8 flex items-center justify-center gap-4">
+                        <a href="https://anviksha-device.vercel.app/" target="_blank" rel="noopener noreferrer">
+                            <Button size="xl" variant="primary" icon={<IconActivity />} className="shadow-blue-500/25 shadow-xl">
+                                Launch Application
+                            </Button>
+                        </a>
+                    </div>
                 </motion.div>
 
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    transition={{ duration: 0.7, delay: 0.2 }}
-                    className="mt-16 max-w-7xl mx-auto bg-white border border-slate-200 rounded-2xl shadow-2xl shadow-slate-200"
+                {/* 3D Dashboard Mockup Container */}
+                <div 
+                    className="perspective-1000 py-10" 
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                    ref={ref}
                 >
-                    <div className="p-4 border-b border-slate-200 flex items-center gap-2">
-                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    </div>
-
-                    <div className="p-4 sm:p-8">
-                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                            {/* Image Uploader Column */}
-                            <div className="lg:col-span-3 flex flex-col">
-                                <h3 className="text-xl font-semibold text-slate-800 text-center">1. Select a Sample X-Ray</h3>
-                                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {(Object.keys(samples) as Array<keyof typeof samples>).map(key => {
-                                        const sample = samples[key];
-                                        const isSelected = selectedSample === key;
-                                        return (
-                                            <Card 
-                                                key={sample.id}
-                                                className={`p-4 cursor-pointer relative overflow-hidden transition-all duration-300 ${isSelected ? 'border-blue-500 ring-2 ring-blue-500' : 'hover:border-slate-300'}`}
-                                                onClick={() => handleSelectSample(key)}
-                                            >
-                                                <img src={sample.imageUrl} alt={sample.title} className="absolute inset-0 w-full h-full object-cover opacity-10" />
-                                                <div className="absolute inset-0 bg-white/80"></div>
-
-                                                <div className="relative z-10">
-                                                    <h4 className="font-bold text-slate-800">{sample.title}</h4>
-                                                    <p className="text-sm text-slate-600 mt-1">{sample.description}</p>
-                                                    <div className={`mt-3 flex items-center text-sm font-semibold ${isSelected ? 'text-blue-600' : 'text-slate-500'}`}>
-                                                        {isSelected ? 'Selected' : 'Select Case'}
-                                                        {isSelected && <IconCheckCircle className="w-4 h-4 ml-1" />}
-                                                    </div>
-                                                </div>
-                                            </Card>
-                                        )
-                                    })}
+                    <motion.div
+                        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+                        className="relative mx-auto max-w-6xl bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl shadow-black/50 overflow-hidden"
+                    >
+                        {/* Browser/App Window Header */}
+                        <div className="h-14 bg-slate-800/50 border-b border-slate-700/50 flex items-center px-6 justify-between backdrop-blur-md">
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-2 mr-4">
+                                    <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                                    <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                                    <div className="w-3 h-3 rounded-full bg-green-500/80" />
                                 </div>
-                                <Card className="mt-4 w-full aspect-square overflow-hidden relative bg-slate-100 flex items-center justify-center border-slate-200" onMouseLeave={() => setHoveredFinding(null)}>
-                                    {!selectedSample && (
-                                        <div className="w-full h-full cursor-pointer flex flex-col items-center justify-center p-8 text-center">
-                                            <IconFileCheck className="w-12 h-12 text-slate-400 mb-4" />
-                                            <p className="text-slate-500">Select a sample case to view the X-ray here.</p>
-                                        </div>
-                                    )}
-                                    <AnimatePresence>
-                                        {selectedSample && (
-                                            <motion.img 
-                                                key={selectedSample}
-                                                src={samples[selectedSample].imageUrl} 
-                                                alt={samples[selectedSample].title} 
-                                                className="w-full h-full object-contain absolute top-0 left-0" 
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                transition={{ duration: 0.3 }}
-                                            />
-                                        )}
-                                    </AnimatePresence>
-                                    {hoveredFinding?.boundingBox && (
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 1.2 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            transition={{type: 'spring', stiffness: 300, damping: 20}}
-                                            className="absolute border-2 border-blue-500 pointer-events-none rounded-lg bg-blue-500/20"
-                                            style={{
-                                                left: `${hoveredFinding.boundingBox[0] * 100}%`,
-                                                top: `${hoveredFinding.boundingBox[1] * 100}%`,
-                                                width: `${(hoveredFinding.boundingBox[2] - hoveredFinding.boundingBox[0]) * 100}%`,
-                                                height: `${(hoveredFinding.boundingBox[3] - hoveredFinding.boundingBox[1]) * 100}%`,
-                                            }}
-                                        />
-                                    )}
-                                </Card>
-
-                                <div className="mt-6 text-center">
-                                    <Button
-                                        size="lg"
-                                        variant="primary"
-                                        onClick={handleStartAnalysis}
-                                        disabled={isAnalyzing || !selectedSample}
-                                        icon={<IconArrowRight />}
-                                    >
-                                        {isAnalyzing ? 'Analyzing...' : 'Run AI Analysis'}
-                                    </Button>
+                                <div className="hidden md:flex items-center px-3 py-1.5 bg-slate-950/50 rounded-md border border-slate-700/50 text-slate-400 text-xs font-mono">
+                                    <IconSearch size={12} className="mr-2" />
+                                    app.anviksha.ai/dashboard/patient/AX-9921
                                 </div>
                             </div>
-                            
-                            {/* Analysis Results Column */}
-                            <div className="lg:col-span-2 flex flex-col">
-                                <h3 className="text-xl font-semibold text-slate-800 text-center">2. Review AI-Generated Report</h3>
-                                <Card className="mt-4 w-full flex-grow p-6 bg-slate-100/70">
-                                    <AnimatePresence mode="wait">
-                                        {isAnalyzing ? (
-                                            <AnalysisLoader />
-                                        ) : analysisResult ? (
-                                            <motion.div 
-                                                key="results" 
-                                                variants={containerVariants} 
-                                                initial="hidden" 
-                                                animate="visible"
-                                            >
-                                                <motion.div variants={itemVariants}>
-                                                    <h4 className="font-semibold text-slate-800">Overall Assessment</h4>
-                                                    <p className="mt-2 text-sm text-slate-600">{analysisResult.overallAssessment}</p>
-                                                </motion.div>
-
-                                                {analysisResult.findings.length > 0 ? (
-                                                     <motion.div variants={itemVariants} className="mt-6">
-                                                        <h4 className="font-semibold text-slate-800">Key Findings</h4>
-                                                        <div className="mt-2 space-y-3">
-                                                            {analysisResult.findings.map((finding, index) => {
-                                                                const SeverityIcon = severityConfig[finding.severity].icon;
-                                                                const severityColor = severityConfig[finding.severity].color;
-                                                                const CategoryIcon = categoryConfig[finding.category].icon;
-                                                                return (
-                                                                    <div key={index} onMouseEnter={() => setHoveredFinding(finding)} onMouseLeave={() => setHoveredFinding(null)} className="p-3 bg-white rounded-lg border border-slate-200 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
-                                                                        <div className="flex items-center justify-between">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <CategoryIcon className="w-5 h-5 text-slate-500" />
-                                                                                <span className="font-semibold text-slate-700">{finding.condition}</span>
-                                                                            </div>
-                                                                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${severityColor} bg-opacity-10 ${severityColor.replace('text-', 'bg-')}`}>{finding.severity}</span>
-                                                                        </div>
-                                                                        <p className="text-sm text-slate-500 mt-1.5">{finding.description}</p>
-                                                                    </div>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    </motion.div>
-                                                ) : (
-                                                    <motion.div variants={itemVariants} className="mt-6 text-center py-8">
-                                                        <IconCheckCircle className="w-12 h-12 text-green-500 mx-auto" />
-                                                        <h4 className="mt-4 font-semibold text-slate-800">No Significant Findings</h4>
-                                                        <p className="mt-1 text-slate-500">The AI analysis did not detect any notable abnormalities.</p>
-                                                    </motion.div>
-                                                )}
-
-                                            </motion.div>
-                                        ) : (
-                                            <motion.div key="placeholder" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center flex flex-col items-center justify-center h-full">
-                                                <IconFileCheck className="w-12 h-12 text-slate-400 mb-4" />
-                                                <p className="text-slate-500">AI-generated findings will appear here after analysis.</p>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </Card>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 text-slate-300 text-sm font-medium">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                    System Online
+                                </div>
+                                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
+                                    DR
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </motion.div>
+
+                        {/* App Body */}
+                        <div className="flex h-[600px] md:h-[700px] bg-slate-950 text-slate-200">
+                            {/* Sidebar */}
+                            <div className="w-20 bg-slate-900/30 border-r border-slate-800 flex flex-col items-center py-6 gap-8 hidden md:flex">
+                                <div className="p-2 bg-blue-600/20 rounded-lg text-blue-400"><IconActivity /></div>
+                                <div className="text-slate-500 hover:text-slate-300 cursor-pointer"><IconStethoscope /></div>
+                                <div className="text-slate-500 hover:text-slate-300 cursor-pointer"><IconPill /></div>
+                                <div className="text-slate-500 hover:text-slate-300 cursor-pointer"><IconBrain /></div>
+                                <div className="mt-auto text-slate-500 hover:text-slate-300 cursor-pointer"><IconSettings /></div>
+                            </div>
+
+                            {/* Main Content Grid */}
+                            <div className="flex-1 p-6 md:p-8 overflow-y-auto custom-scrollbar">
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                                    
+                                    {/* Top Stats Row */}
+                                    <div className="md:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6 mb-2">
+                                        {/* Stat 1: Triage Score */}
+                                        <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-xl relative overflow-hidden group">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Triage Risk</p>
+                                                    <h4 className="text-2xl font-bold text-white mt-1">High Priority</h4>
+                                                </div>
+                                                <div className="p-2 bg-red-500/20 rounded-lg text-red-400"><IconAlert size={20} /></div>
+                                            </div>
+                                            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                                <motion.div 
+                                                    initial={{ width: 0 }}
+                                                    whileInView={{ width: '85%' }}
+                                                    transition={{ duration: 1, delay: 0.5 }}
+                                                    className="h-full bg-red-500"
+                                                />
+                                            </div>
+                                            <p className="text-xs text-slate-500 mt-2">Score: 85/100 (Immediate Attention)</p>
+                                        </div>
+
+                                        {/* Stat 2: Active Vitals */}
+                                        <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-xl">
+                                            <div className="flex justify-between items-start mb-2">
+                                                 <div>
+                                                    <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Heart Rate</p>
+                                                    <h4 className="text-2xl font-bold text-white mt-1">98 <span className="text-sm font-normal text-slate-500">BPM</span></h4>
+                                                </div>
+                                                <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400"><IconActivity size={20} /></div>
+                                            </div>
+                                            {/* Fake Chart */}
+                                            <div className="flex items-end justify-between gap-1 h-10 mt-2 opacity-50">
+                                                {[40, 60, 45, 70, 55, 80, 65, 90, 60, 75, 50, 60].map((h, i) => (
+                                                    <motion.div 
+                                                        key={i}
+                                                        initial={{ height: '20%' }}
+                                                        animate={{ height: `${h}%` }}
+                                                        transition={{ duration: 1.5, repeat: Infinity, repeatType: 'mirror', delay: i * 0.1 }}
+                                                        className="w-full bg-blue-500 rounded-t-sm" 
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Stat 3: Pharmacy Savings */}
+                                        <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-xl relative overflow-hidden">
+                                             <div className="absolute top-0 right-0 p-2">
+                                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500 text-white">SAVED 85%</span>
+                                             </div>
+                                             <div className="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Pharmacy Match</p>
+                                                    <h4 className="text-2xl font-bold text-white mt-1">₹1,240 <span className="text-sm font-normal text-slate-500 line-through">₹8,400</span></h4>
+                                                </div>
+                                                <div className="p-2 bg-green-500/20 rounded-lg text-green-400"><IconPill size={20} /></div>
+                                            </div>
+                                            <p className="text-xs text-slate-400">Switched to Generic Equivalent (Jan Aushadhi)</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Main Feature: Radiology Viewer */}
+                                    <div className="md:col-span-8 bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden flex flex-col relative group">
+                                        <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80 backdrop-blur">
+                                            <h3 className="font-semibold text-slate-200 flex items-center gap-2">
+                                                <IconStethoscope size={16} className="text-blue-400"/> Chest X-Ray Analysis
+                                            </h3>
+                                            <span className="text-xs px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700">Model: CXR-DenseNet-121</span>
+                                        </div>
+                                        <div className="relative flex-1 bg-black min-h-[300px] flex items-center justify-center overflow-hidden">
+                                            {/* X-Ray Image Background */}
+                                            <img 
+                                                src="https://images.unsplash.com/photo-1530497610245-94d3c16cda28?q=80&w=2000&auto=format&fit=crop" 
+                                                alt="Chest X-Ray" 
+                                                className="opacity-80 w-full h-full object-cover mix-blend-screen"
+                                            />
+                                            
+                                            {/* Scanning Line Animation */}
+                                            <motion.div 
+                                                initial={{ top: '0%' }}
+                                                animate={{ top: '100%' }}
+                                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                                className="absolute left-0 right-0 h-1 bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.8)] z-10"
+                                            />
+
+                                            {/* Bounding Boxes - Simulated Findings */}
+                                            <motion.div 
+                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                whileInView={{ opacity: 1, scale: 1 }}
+                                                transition={{ delay: 1.5, duration: 0.5 }}
+                                                className="absolute top-[35%] right-[30%] w-24 h-24 border-2 border-red-500 rounded-sm shadow-[0_0_15px_rgba(239,68,68,0.5)] flex flex-col items-end justify-start p-1"
+                                            >
+                                                <div className="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm">
+                                                    Nodule 98%
+                                                </div>
+                                            </motion.div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Side: Analysis Feed */}
+                                    <div className="md:col-span-4 flex flex-col gap-6">
+                                        {/* Findings Card */}
+                                        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex-1">
+                                            <h3 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                                                <IconFileText size={16}/> Clinical Findings
+                                            </h3>
+                                            <div className="space-y-3">
+                                                <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                                                    <IconAlert size={16} className="text-red-400 mt-0.5 shrink-0" />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-red-200">Abnormal Opacity Detected</p>
+                                                        <p className="text-xs text-red-400/80 mt-0.5">Right upper lobe density consistent with consolidation.</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700">
+                                                    <IconCheckCircle size={16} className="text-green-400 mt-0.5 shrink-0" />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-slate-300">Cardiac Silhouette Normal</p>
+                                                        <p className="text-xs text-slate-500 mt-0.5">No signs of cardiomegaly.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="mt-6 pt-4 border-t border-slate-800">
+                                                <Button variant="primary" size="md" className="w-full justify-center text-sm">
+                                                    Generate PDF Report
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
             </div>
         </section>
     );

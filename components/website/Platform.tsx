@@ -1,136 +1,114 @@
-import React from 'react';
-// FIX: Import Variants type for explicit variant typing.
-import { motion, Variants } from 'framer-motion';
-import { IconLung, IconHeart, IconBone, IconAi, IconJson } from '../Icons';
-import Card from '../ui/Card';
+
+import React, { useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import { IconSparkles, IconSearch, IconFileText, IconHistory, IconCpu, IconShield } from '../Icons';
+
+// Spotlight Card Component
+const SpotlightCard = ({ children, className = "" }: { children?: React.ReactNode, className?: string }) => {
+    const divRef = useRef<HTMLDivElement>(null);
+    const [isFocused, setIsFocused] = useState(false);
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+  
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!divRef.current) return;
+  
+      const rect = divRef.current.getBoundingClientRect();
+      setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    };
+  
+    return (
+      <div
+        ref={divRef}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setIsFocused(true)}
+        onMouseLeave={() => setIsFocused(false)}
+        className={`relative rounded-2xl border border-slate-200 bg-white overflow-hidden ${className}`}
+      >
+        <div
+          className="pointer-events-none absolute -inset-px opacity-0 transition duration-300"
+          style={{
+            opacity: isFocused ? 1 : 0,
+            background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(59,130,246,0.1), transparent 40%)`,
+          }}
+        />
+        <div className="relative h-full">{children}</div>
+      </div>
+    );
+  };
 
 const features = [
   {
-    icon: IconLung,
-    title: 'Pulmonary Analysis',
-    description: 'Detects over 20 pulmonary abnormalities, including nodules, pneumonia, and pneumothorax, with pixel-perfect precision.'
+    icon: IconCpu,
+    title: 'FDA-Cleared Architectures',
+    description: 'Built on proven DenseNet and ResNet frameworks, calibrated for high-sensitivity medical imaging analysis.'
   },
   {
-    icon: IconHeart,
-    title: 'Cardiac Assessment',
-    description: 'Measures cardiothoracic ratio and identifies cardiomegaly and other key cardiac indicators from chest X-rays.'
+    icon: IconFileText,
+    title: 'Multi-Modal Inputs',
+    description: 'Seamlessly process DICOM images, PDF lab reports, and natural language symptoms in a single query.'
   },
   {
-    icon: IconBone,
-    title: 'Skeletal Evaluation',
-    description: 'Identifies and localizes fractures in ribs, clavicles, and other thoracic skeletal structures with high sensitivity.'
+    icon: IconSearch,
+    title: 'Real-Time Savings',
+    description: 'Live scraping of generic medicine databases to instantly find cost-effective alternatives for every prescription.'
+  },
+  {
+    icon: IconShield,
+    title: 'Privacy First',
+    description: 'Local-first processing options and full HIPAA-compliant encryption ensure patient data never leaves the secure loop.'
   }
 ];
 
-const models = [
-    {
-      icon: IconAi,
-      title: 'Convolutional Neural Networks (CNNs)',
-      description: 'The core of our image analysis, advanced CNNs are trained to identify localized features like nodules and fractures.'
-    },
-    {
-      icon: IconJson,
-      title: 'Vision Transformers (ViTs)',
-      description: 'Leveraged to understand global context within an image, improving assessments of conditions like cardiomegaly.'
-    }
-  ];
-
 const Platform: React.FC = () => {
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.2, delayChildren: 0.2 },
-    },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { y: 20, opacity: 0 },
-    // FIX: Typing with Variants resolves incorrect type inference for 'ease: "easeOut"'.
-    visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: 'easeOut' } },
-  };
-
   return (
-    <section id="platform" className="py-20 lg:py-32">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
-          initial={{ opacity: 0, y:20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7 }}
-          className="text-center max-w-3xl mx-auto"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900">The Anviksha AI Platform</h2>
-          <p className="mt-4 text-lg text-slate-600">
-            Our proprietary AI models are trained on one of the world's largest and most diverse datasets of de-identified medical images, ensuring robust and generalizable performance across key clinical areas.
-          </p>
-        </motion.div>
+    <section id="platform" className="py-32 relative overflow-hidden bg-slate-50">
+       {/* Background decoration */}
+       <div className="absolute inset-0 opacity-[0.03]" style={{ 
+            backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', 
+            backgroundSize: '40px 40px' 
+       }}></div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8"
-        >
-          {features.map((feature, index) => (
-            <motion.div key={index} variants={itemVariants}>
-              <Card 
-                className="p-8 text-center h-full bg-white transition-all duration-300"
-                whileHover={{ 
-                  y: -8, 
-                  scale: 1.03,
-                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-                }}
-              >
-                <motion.div 
-                  className="inline-block p-4 bg-blue-100 rounded-full mb-6"
-                >
-                  <feature.icon className="h-8 w-8 text-blue-600" />
-                </motion.div>
-                <h3 className="text-xl font-bold text-slate-800">{feature.title}</h3>
-                <p className="mt-2 text-slate-600">{feature.description}</p>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        <div className="mt-20 border-t border-slate-200 pt-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
             <motion.div 
-                initial={{ opacity: 0, y:20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.7 }}
-                className="text-center max-w-3xl mx-auto"
-                >
-                <h3 className="text-3xl font-bold text-slate-900">Powered by a State-of-the-Art AI Engine</h3>
-                <p className="mt-4 text-slate-600">
-                    We employ a multi-model approach, combining the strengths of different neural network architectures for unparalleled accuracy.
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="max-w-2xl"
+            >
+                <h2 className="text-4xl md:text-5xl font-bold text-slate-900">Engineered for <br/>Accuracy.</h2>
+                <p className="mt-6 text-lg text-slate-600 leading-relaxed">
+                    Under the hood, Anviksha combines classical computer vision with state-of-the-art generative models to deliver results you can trust.
                 </p>
             </motion.div>
-            <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                className="mt-12 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8"
-            >
-                {models.map((model, index) => (
-                    <motion.div 
-                        key={index} 
-                        variants={itemVariants}
-                        className="bg-slate-100/70 border border-slate-200 rounded-xl p-8"
-                    >
-                    <div className="flex items-center gap-4">
-                        <model.icon className="h-8 w-8 text-blue-600" />
-                        <h3 className="text-xl font-bold text-slate-800">{model.title}</h3>
-                    </div>
-                    <p className="mt-4 text-slate-600">{model.description}</p>
-                    </motion.div>
-                ))}
-            </motion.div>
+            
+            {/* Removed View Documentation Button */}
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {features.map((feature, index) => (
+            <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="h-full"
+            >
+                <SpotlightCard className="h-full bg-slate-50/50 hover:bg-white transition-colors shadow-sm hover:shadow-md">
+                    <div className="p-8 h-full flex flex-col">
+                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-6 text-blue-600">
+                            <feature.icon size={24} />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
+                        <p className="text-slate-600 leading-relaxed text-sm flex-grow">
+                            {feature.description}
+                        </p>
+                    </div>
+                </SpotlightCard>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );

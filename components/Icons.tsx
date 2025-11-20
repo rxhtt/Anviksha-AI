@@ -29,6 +29,18 @@ import {
   User,
   BookOpen,
   KeyRound,
+  Pill,
+  Stethoscope,
+  Activity,
+  Microscope,
+  Sparkles,
+  Brain,
+  Zap,
+  Menu,
+  Cpu,
+  Shield,
+  Lock,
+  Infinity
 } from 'lucide-react';
 
 export const IconDashboard = LayoutDashboard;
@@ -60,3 +72,15 @@ export const IconBot = Bot;
 export const IconUser = User;
 export const IconBook = BookOpen;
 export const IconKey = KeyRound;
+export const IconPill = Pill;
+export const IconStethoscope = Stethoscope;
+export const IconActivity = Activity;
+export const IconMicroscope = Microscope;
+export const IconSparkles = Sparkles;
+export const IconBrain = Brain;
+export const IconZap = Zap;
+export const IconMenu = Menu;
+export const IconCpu = Cpu;
+export const IconShield = Shield;
+export const IconLock = Lock;
+export const IconInfinity = Infinity;
