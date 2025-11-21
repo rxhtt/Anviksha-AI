@@ -39,7 +39,7 @@ const SpotlightCard = ({ children, className = "" }: { children?: React.ReactNod
 const features = [
   {
     icon: IconCpu,
-    title: 'FDA-Cleared Architectures',
+    title: 'Clinical-Grade Architectures',
     description: 'Built on proven DenseNet and ResNet frameworks, calibrated for high-sensitivity medical imaging analysis.'
   },
   {

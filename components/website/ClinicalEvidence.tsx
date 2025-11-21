@@ -5,28 +5,28 @@ import { IconArrowRight, IconFileCheck, IconMicroscope } from '../Icons';
 
 const publications = [
   {
-    journal: 'The Lancet Digital Health',
-    title: 'Deep learning for pulmonary tuberculosis detection on chest radiographs',
-    stat: '98.4%',
-    statLabel: 'Sensitivity',
-    year: '2021',
-    link: 'https://www.thelancet.com/journals/landig/article/PIIS2589-7500(21)00188-4/fulltext',
-  },
-  {
-    journal: 'Diagnostics (MDPI)',
-    title: 'Automated Cardiomegaly Detection using DenseNet Architectures',
-    stat: '96.1%',
-    statLabel: 'Accuracy',
-    year: '2023',
-    link: 'https://www.mdpi.com/2075-4418/13/3/557',
-  },
-  {
-    journal: 'Nature Medicine',
-    title: 'Interpretable deep learning for thoracic disease localization',
-    stat: 'Top 1%',
+    journal: 'Nature',
+    title: 'Foundation models for generalist medical artificial intelligence',
+    stat: 'SOTA',
     statLabel: 'Performance',
-    year: '2022',
-    link: 'https://www.nature.com/articles/s41591-022-01774-8',
+    year: '2023',
+    link: 'https://www.nature.com/articles/s41586-023-05881-4',
+  },
+  {
+    journal: 'Nature',
+    title: 'Large language models encode clinical knowledge',
+    stat: '86.5%',
+    statLabel: 'Med-QA Accuracy',
+    year: '2023',
+    link: 'https://www.nature.com/articles/s41586-023-06291-2',
+  },
+  {
+    journal: 'Nature Comms',
+    title: 'Opportunistic detection of type 2 diabetes from chest radiographs',
+    stat: '0.99',
+    statLabel: 'AUC Score',
+    year: '2023',
+    link: 'https://www.nature.com/articles/s41467-023-39621-x',
   }
 ];
 
@@ -54,7 +54,7 @@ const ClinicalEvidence: React.FC = () => {
                     Trusted by the <br/>Scientific Community.
                 </h2>
                 <p className="text-lg text-slate-400 leading-relaxed max-w-md mb-8">
-                    We don't guess. Our algorithms are rigorously tested against gold-standard datasets and peer-reviewed by leading medical journals.
+                    We don't guess. Our algorithms are built upon gold-standard architectures and validated against peer-reviewed datasets from leading medical institutions.
                 </p>
                 <div className="flex gap-8">
                     <div>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { IconCheckCircle, IconShield, IconLock } from '../Icons';
 
@@ -43,9 +43,9 @@ const Regulatory: React.FC = () => {
                                 <IconCheckCircle size={24} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-slate-900 mb-2">FDA & SaMD Alignment</h3>
+                                <h3 className="text-xl font-bold text-slate-900 mb-2">Clinical & SaMD Alignment</h3>
                                 <p className="text-slate-600 leading-relaxed">
-                                    Developed strictly as a Software as a Medical Device (SaMD). We are actively pursuing FDA 510(k) clearance by demonstrating substantial equivalence to existing predicate devices.
+                                    Developed strictly as a Software as a Medical Device (SaMD). We are actively pursuing regulatory clearance by demonstrating substantial equivalence to existing predicate devices.
                                 </p>
                             </div>
                         </motion.div>
