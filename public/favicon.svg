@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 104 92" fill="#12100e">
+  <!-- Same geometry as src/components/Logo.jsx. If the mark changes, change both. -->
+  <path d="M50 6 L95 86 L79 86 L50 26 L21 86 L5 86 Z" />
+  <path d="M5 86 C7 64, 24 50, 50 45 C72 41, 86 40, 98 39 L98 45 C84 46, 70 48, 52 53 C32 59, 21 70, 21 86 Z" />
+  <path d="M45 48 L54 48 L54 86 L45 86 Z" />
+</svg>

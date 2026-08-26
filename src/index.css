@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+/* Light theme — white paper, near-black ink, warm-neutral grays, amber accent.
+   NO BLUE ANYWHERE: the grays are warm/neutral (not blue-gray), and the accent
+   ramp is amber rather than the deck's cyan. Nothing in this file, and nothing
+   that consumes it, should resolve to a blue.
+
+   Three faces, each with one job:
+     font-display (Instrument Serif) — headlines only, italic for accents
+     font-sans    (Inter)            — body, UI, buttons
+     font-mono    (JetBrains Mono)   — eyebrows, stats, axis labels, numerals
+
+   CONTRAST RULES, so every piece of text stays visible on white:
+     ink-900 ~19:1   headings
+     ink-700 ~10:1   body copy
+     ink-500 ~5.2:1  the FLOOR for small text — axis labels, captions, meta
+     ink-400 ~2.7:1  DECORATION ONLY — hairlines, dividers, inactive glyphs.
+                     Never put readable text in ink-400.
+     brand-700 ~5.4:1 the only accent step allowed to carry text on white.
+     brand-500        fills, rules and marks only — never text. */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Instrument Serif", ui-serif, Georgia, Cambria, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Ink — type. Neutral, very slightly warm; no blue cast. */
+  --color-ink-900: #12100e;
+  --color-ink-700: #3a3632;
+  --color-ink-500: #6b655e;
+  --color-ink-400: #a09a92;
+
+  /* Paper — surfaces, warm neutral */
+  --color-paper: #ffffff;
+  --color-paper-50: #faf9f7;
+  --color-paper-100: #f3f1ec;
+  --color-line: #e6e2da;
+
+  /* Accent — amber */
+  --color-brand-700: #8a4b0f;
+  --color-brand-600: #b25e10;
+  --color-brand-500: #d97a12;
+  --color-brand-100: #fbeed9;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink-700);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Instrument Serif ships in a single weight; it carries size, not boldness, so
+   stop the browser synthesising a fake bold when it lands inside a heading. */
+.font-display {
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+/* Visible focus for keyboard users on every interactive element */
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--color-brand-100);
+  color: var(--color-ink-900);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
